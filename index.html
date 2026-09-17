@@ -293,6 +293,15 @@ body{overscroll-behavior-y:none}
 .brand.onmap img{width:120px}
 a.btn{text-decoration:none}
 
+/* owner dashboard */
+.ostats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.ostats div{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center}
+.ostats b{display:block;font-family:var(--display);font-size:20px;color:var(--gold);line-height:1.1;word-break:break-word}
+.ostats span{font-size:10.5px;color:var(--muted)}
+.obar{display:grid;grid-template-columns:70px 1fr 34px;gap:6px;align-items:center;font-size:12.5px;margin:3px 0}
+.obar i{display:block;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--orange),var(--gold));min-width:3px}
+.obar b{text-align:right}
+
 </style>
 </head><body><div id="app"></div>
 <script>
@@ -646,6 +655,9 @@ const UNLOCKS = [
 const RARITY_ORDER = ['common','rare','epic','legendary'];
 // Set this to the real WRSTL web address when it is ready, e.g. 'https://www.wrstl.club' — the More screen button links there automatically.
 const WRSTL_URL = '';
+// Player tracker: paste the Google Apps Script web app URL here (see wrstl-legends-tracker/Code.gs). Empty = tracking off.
+const TELEMETRY_URL = 'https://script.google.com/macros/s/AKfycbzLFe7BI0qjsFZ9Hcw-kLK8vr4MtuFJESgR4PpTaVuCfXO8t9LFJmWSm42nOzBu44_w/exec';
+const GAME_VER = '1.3';
 
 // ===================== CORE =====================
 const app = document.getElementById('app');
@@ -665,25 +677,26 @@ function freshSave(){
   return {v:2, char:null, name:'', av:null, style:'speed', lvl:1, xp:0, pts:0, stats:null, trained:{}, coins:0, energy:20, energyAt:Date.now(),
     gymWins:{}, stamps:{}, cards:{}, equip:[], kit:{owned:{clubSinglet:1}, eq:{singlet:'clubSinglet'}},
     loc:'hq', phoenix:false, rises:0, sound:true, bouts:0, wins:0, tut:false, seenMapTip:false,
-    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}};
+    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0};
 }
 function loadSave(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===2) return Object.assign(freshSave(), s); }catch(e){}
   return freshSave();
 }
 let S = loadSave();
+if(!S.pid){ S.pid = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join(''); save(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 function startCareer(styleId){
   const c = styleById(styleId);
   if(S.char) S.rises = (S.rises||0) + (S.phoenix?1:0);
-  S.char = 'player'; S.style = styleId; S.lvl = 1; S.xp = 0; S.pts = 0; S.stats = {...c.stats}; S.trained = {};
+  S.char = 'player'; S.style = styleId; S.careers = (S.careers||0)+1; S.lvl = 1; S.xp = 0; S.pts = 0; S.stats = {...c.stats}; S.trained = {};
   S.gymWins = {}; S.stamps = {}; S.loc = 'hq'; S.coins = Math.max(S.coins||0, 0);
   S.mis = {}; S.bossBeat = {}; S.quiz = {}; S.tees = {}; S.record = []; S.streak = 0; S.lastLoss = false; S.seenUnlock = {};
   if(!S.cards[c.move]) S.cards[c.move] = 1;
   S.equip = [c.move];
   S.energy = maxEnergy(); S.energyAt = Date.now();
-  save();
+  save(); ping('start');
 }
 
 // ---------- derived ----------
@@ -705,6 +718,18 @@ function syncEnergy(){
   if(n>0){ S.energy = Math.min(max, S.energy+n); S.energyAt += n*60000; if(S.energy>=max) S.energyAt = Date.now(); save(); }
 }
 function spendEnergy(n){ syncEnergy(); if(S.energy<n) return false; if(S.energy>=maxEnergy()) S.energyAt = Date.now(); S.energy -= n; save(); return true; }
+
+// ---------- anonymous player tracker ----------
+// Sends a tiny anonymous ping (random id, level, stamps, bouts) to the owner's Google Sheet. No names, no emails.
+function platformName(){ const u=navigator.userAgent||''; return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':'desktop'; }
+function ping(reason){
+  if(!TELEMETRY_URL || !S.char) return;
+  const now = Date.now();
+  if(reason==='open' && now-(S.lastPing||0) < 6*3600*1000) return; // at most one 'just opened' ping per 6 hours
+  S.lastPing = now; save();
+  const body = JSON.stringify({pid:S.pid, lvl:S.lvl, stamps:Object.keys(S.stamps).length, bouts:S.bouts, wins:S.wins, phoenix:!!S.phoenix, careers:S.careers||1, platform:platformName(), ver:GAME_VER, why:reason});
+  try{ fetch(TELEMETRY_URL, {method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain'}, body}).catch(()=>{}); }catch(e){}
+}
 
 // ---------- sound ----------
 let AC = null;
@@ -853,7 +878,7 @@ async function checkStamp(gid){
   S.stamps[gid] = new Date().toLocaleDateString('en-GB');
   S.tees[g.boss] = 1;
   if(gid==='olympics' && !S.phoenix){ S.phoenix = true; }
-  save();
+  save(); ping('stamp');
   await stampModal(g);
   for(const u of UNLOCKS){ if(u.after===gid && !S.seenUnlock[u.k]){ S.seenUnlock[u.k]=1; save(); await coachWait(`${u.i} New skill: ${u.by}'s lesson`, `<p>${esc(u.t)}</p>`, 'Got it'); } }
   if(gid==='olympics') await phoenixModal();
@@ -1075,6 +1100,7 @@ RENDER.map = ()=>{
     </svg></div></div>` + nav();
 };
 AFTER.map = ()=>{
+  ping('open');
   const cur = GYMS[gymIdx(S.loc)], svg = document.getElementById('map');
   const scale = svg.getBoundingClientRect().width/400;
   window.scrollTo(0, Math.max(0, cur.y*scale - window.innerHeight*.55));
@@ -1253,7 +1279,7 @@ RENDER.more = ()=>`${hud()}<div class="screen">
     <button class="btn ghost" data-act="toSelect">🔁 New career</button>
     <button class="btn ghost" data-act="resetAll" style="color:#ff8a7a">Delete all progress</button>
   </div>
-  <div style="text-align:center;margin-top:16px"><img src="${IMG.logo_h}" alt="WRSTL" style="width:140px"><p class="small muted" style="margin:4px 0 0">WRSTL Legends · Phoenix Wrestling Club · www.WRSTL.club · @WRSTL_club</p></div>
+  <div style="text-align:center;margin-top:16px"><img src="${IMG.logo_h}" alt="WRSTL" style="width:140px" data-act="ownerTap"><p class="small muted" style="margin:4px 0 0">WRSTL Legends · Phoenix Wrestling Club · www.WRSTL.club · @WRSTL_club</p></div>
 </div>${nav()}`;
 function howToScore(){ return `<h3>How to score (just like the passport)</h3>
   <div class="scoregrid">
@@ -1276,6 +1302,38 @@ function howToPlay(){ return `<h3>How a bout works</h3>
   </ol>
   <p class="small muted" style="margin:0">Win your pick and you attack. Lose it and you must defend. Same pick means a scramble. Don't be predictable: opponents notice if you repeat the same move.</p>
   <p class="small muted" style="margin:6px 0 0">New skills unlock as you earn stamps: ${UNLOCKS.map(u=>`<b>${esc(u.by)}'s lesson</b> (${unlocked(u.k)?'unlocked':'after '+esc(GYMS[gymIdx(u.after)].name)})`).join(' · ')}.</p>`; }
+// ---------- hidden owner dashboard: tap the small wordmark at the bottom of More 5 times ----------
+let ownerTaps = [];
+ACTIONS.ownerTap = ()=>{
+  const now = Date.now(); ownerTaps = ownerTaps.filter(t=>now-t<3000); ownerTaps.push(now);
+  if(ownerTaps.length>=5){ ownerTaps = []; ownerLogin(); }
+};
+function ownerLogin(){
+  if(!TELEMETRY_URL){ modal(`<h2>Owner dashboard</h2><p class="small muted">Player tracking isn't connected yet. Set TELEMETRY_URL in the game code to your Apps Script web app URL.</p><button class="btn block" data-act="close">OK</button>`); return; }
+  if(UI.ownerKey){ ownerLoad(UI.ownerKey); return; }
+  modal(`<h2>Owner dashboard</h2><p class="small muted">Enter your owner key.</p><input id="ownerKey" class="namein" type="password" autocomplete="off" placeholder="Owner key">
+    <div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="close">Cancel</button><button class="btn grow" data-act="ownerGo">Open</button></div>`);
+  setTimeout(()=>{ const i=document.getElementById('ownerKey'); if(i){ i.focus(); i.addEventListener('keydown', e=>{ if(e.key==='Enter') ACTIONS.ownerGo(); }); } }, 50);
+}
+ACTIONS.ownerGo = ()=>{ const i=document.getElementById('ownerKey'); const k=(i&&i.value||'').trim(); if(!k) return; ownerLoad(k); };
+async function ownerLoad(key){
+  modal(`<h2>Owner dashboard</h2><p class="muted">Loading…</p>`);
+  let d = null;
+  try{ const r = await fetch(TELEMETRY_URL+'?key='+encodeURIComponent(key), {redirect:'follow'}); d = await r.json(); }catch(e){ d = {ok:false, err:'Could not reach the tracker. Check the URL and that the web app is deployed for "Anyone".'}; }
+  if(!d || !d.ok){ UI.ownerKey = null; modal(`<h2>Owner dashboard</h2><p style="color:#ff8a7a">${esc((d&&d.err)||'No data')}</p><button class="btn block" data-act="close">OK</button>`); return; }
+  UI.ownerKey = key;
+  const bar = (obj, label, max)=>{ const keys=Object.keys(obj).map(Number).sort((a,b)=>a-b); const top=Math.max(1,...keys.map(k=>obj[k]));
+    return keys.length ? keys.map(k=>`<div class="obar"><span>${label} ${k}</span><i style="width:${Math.round(obj[k]/top*100)}%"></i><b>${obj[k]}</b></div>`).join('') : '<p class="small muted">No data yet</p>'; };
+  modal(`<div class="row"><h2 class="grow">Owner dashboard</h2><button class="btn ghost" data-act="ownerRefresh" style="padding:6px 10px;font-size:13px">↻</button></div>
+    <div class="ostats"><div><b>${d.players}</b><span>players</span></div><div><b>${d.today}</b><span>today</span></div><div><b>${d.week}</b><span>this week</span></div><div><b>${d.month}</b><span>this month</span></div></div>
+    <div class="ostats" style="grid-template-columns:repeat(3,1fr)"><div><b>${d.finished}</b><span>beat Phoenix</span></div><div><b>${d.bouts}</b><span>bouts</span></div><div><b>${d.wins}</b><span>wins</span></div></div>
+    <div class="small muted" style="margin-top:6px">Devices: ${Object.keys(d.platforms||{}).length?Object.entries(d.platforms).map(([k,v])=>`${esc(k)} ${v}`).join(' · '):'—'}</div>
+    <h3 style="margin-top:12px">Players by level</h3>${bar(d.levels,'Lv')}
+    <h3 style="margin-top:12px">Players by stamps earned</h3>${bar(d.stamps,'Stamps')}
+    <p class="small muted" style="margin-top:10px">Anonymous IDs only. Updated ${esc(new Date(d.generated).toLocaleString('en-GB'))}. Full table: your Google Sheet.</p>
+    <button class="btn block" style="margin-top:8px" data-act="close">Close</button>`);
+}
+ACTIONS.ownerRefresh = ()=>ownerLoad(UI.ownerKey);
 ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; save(); render(); if(S.sound) SFX.good(); };
 ACTIONS.resetAll = ()=>modal(`<h2>Delete everything?</h2><p>This removes your career, cards, kit and unlocks from this device. It can't be undone.</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="close">Keep it</button><button class="btn grow" data-act="confirmReset" style="background:var(--red)">Delete</button></div>`);
@@ -1595,7 +1653,7 @@ function addXP(n){
     S.xp -= xpNeed(S.lvl); S.lvl++;
     STATS.forEach(s=>S.stats[s.k]+=1);
     const sig = me().sig; sig.forEach(k=>S.stats[k] += sig.length>1?1:2);
-    S.pts += 3; ups.push(S.lvl);
+    S.pts += 3; ups.push(S.lvl); ping('level');
     S.energy = Math.max(S.energy, maxEnergy()); S.energyAt = Date.now();
   }
   if(S.lvl>=MAX_LVL) S.xp = 0;
