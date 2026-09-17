@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
 <title>WRSTL Legends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Nunito:wght@400;700;800;900&display=swap">
@@ -242,6 +242,25 @@ h2{font-size:24px}h3{font-size:17px;letter-spacing:1px}
 .splash img{width:min(88vw,420px);max-height:52vh;object-fit:contain;display:block;margin:0 auto;animation:burst .55s cubic-bezier(.3,1.6,.5,1);filter:drop-shadow(0 12px 18px rgba(0,0,0,.7))}
 .splash b{display:block;font-family:var(--display);font-size:32px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);text-shadow:0 3px 0 #000;margin-top:6px}
 .splash.out{opacity:0;transition:opacity .25s}
+
+/* phone polish */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,.btn,.choice,.bag,.node{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+body{overscroll-behavior-y:none}
+.grow{min-width:0}
+.bag .sack{width:min(92px,90%)}
+@media (hover:none) and (pointer:coarse){.kbd{display:none!important}}
+@media (max-width:380px){
+  .opp{gap:8px;padding:8px}
+  .opp .btn{padding:10px 10px;font-size:14px;letter-spacing:.5px}
+  .oav{width:46px;height:46px}
+  .screen{padding-left:12px;padding-right:12px}
+  .mapwrap{margin:0 -12px -40px}
+  .mapbar{margin:-14px -12px 0;padding:8px 12px}
+  .bags{gap:6px}
+  .modal{padding:10px}
+  .modal .box{padding:14px}
+}
 
 </style>
 </head><body><div id="app"></div>
@@ -1141,7 +1160,7 @@ async function exchange(){
     <div class="row small" style="margin-top:6px"><span class="muted">Your read</span><div class="readbar grow"><i style="width:${Math.round(pRead*100)}%"></i></div><b>${Math.round(pRead*100)}%</b></div>
   </div>
   <div class="choices">${Object.keys(MOVES).map((k,i)=>`<button class="choice" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats ${MOVES[MOVES[k].beats].n}</small></button>`).join('')}</div>
-  <div class="hint">Keys 1 · 2 · 3</div>`);
+  <div class="hint kbd">Keys 1 · 2 · 3</div>`);
   const choice = await new Promise(res=>{ UI.choose = m=>{ UI.choose=null; res(m); }; ACTIONS.choose = d=>UI.choose && UI.choose(d.m); });
   SFX.tap(); B.hist.push(choice);
   const res = choice===plan ? 'scramble' : MOVES[choice].beats===plan ? 'attack' : 'defend';
@@ -1214,7 +1233,7 @@ function runMeter(cfg){
     <div class="row"><b class="grow" style="font-size:17px">${esc(label)}</b>${comeback?'<span class="pill" style="background:var(--red)">🔥 Comeback power</span>':''}</div>
     <div class="meter" id="meter"><div class="zone" style="left:${(center-w/2)*100}%;width:${w*100}%"></div><div class="perf" style="left:${(center-pw/2)*100}%;width:${pw*100}%"></div><div class="mk" id="mk"></div><div class="tm" id="tm"></div></div>
     <button class="btn block tapbtn" id="tapBtn">TAP!</button>
-    <div class="hint" style="margin-top:6px">Green = score · Gold = perfect · Space bar works too</div></div>`);
+    <div class="hint" style="margin-top:6px">Green = score · Gold = perfect<span class="kbd"> · Space bar works too</span></div></div>`);
   return new Promise(res=>{
     const mk=$id('mk'), tm=$id('tm'), btn=$id('tapBtn'), meter=$id('meter');
     const t0 = performance.now(); let done=false, pos=0;
