@@ -269,7 +269,7 @@ function shade(hex, amt){
 // a = {g:'m'|'f', skin, hair, hairCol, singlet, beard, stache, gear, brow:'calm'|'fierce', band}
 function avatarSVG(a){
   const skin = a.skin||SKINS[1], sk2 = shade(skin,-.12), hc = a.hairCol||'#1d1a1a', hc2 = shade(hc,.18);
-  const sing = a.singlet||'#F27121', sing2 = shade(sing,-.25), f = a.g==='f';
+  const sing = a.singlet||'#F27121', sing2 = a.trim||shade(sing,-.25), f = a.g==='f';
   const hair = a.hair||'short';
   let back = '', front = '';
   switch(hair){
@@ -304,7 +304,7 @@ function avatarSVG(a){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110">
     ${back}
     <path d="M6 110 Q8 80 50 76 Q92 80 94 110Z" fill="${skin}"/>
-    <path d="M22 110 L27 84 Q50 98 73 84 L78 110Z" fill="${sing}"/>
+    <path d="M22 110 L27 84 Q50 98 73 84 L78 110Z" fill="${sing}"/>${a.trim?`<path d="M27 84 Q50 98 73 84 L72 89 Q50 103 28 89Z" fill="${a.trim}"/><path d="M27 84 L22 110 L27 110 L31 88Z M73 84 L78 110 L73 110 L69 88Z" fill="${a.trim}"/>`:''}
     <path d="M27 84 L33 80 M73 84 L67 80" stroke="${sing2}" stroke-width="5" stroke-linecap="round"/>
     <text x="50" y="104" font-family="Arial Black,Arial" font-size="8" font-weight="900" text-anchor="middle" fill="${sing2}">${esc(a.logo||'')}</text>
     <rect x="41" y="60" width="18" height="20" rx="6" fill="${sk2}"/>
@@ -466,7 +466,7 @@ const GYMS = [
    members:[
      R('Ruaridh Munro','The Caber','Inverness',{g:'m',skin:SK[0],hair:'curly',hairCol:'#d0702c',singlet:'#1f9d57',beard:true},'Tall and tireless.'),
      R('Catriona Ross','The Golden Eagle','Inverness',{g:'f',skin:SK[1],hair:'long',hairCol:'#e2bf6a',singlet:'#1f9d57'},'Swoops in from nowhere.'),
-     Object.assign(R('Ross McFarlane','Gym Captain','Inverness',{g:'m',skin:SK[0],hair:'short',hairCol:'#7a4a26',beard:true,singlet:'#1f9d57'},'Captain of the Highland Games Ring. Beat him to face Rally.'),{captain:true}),
+     Object.assign(R('Ross McFarlane','Gym Captain','Inverness',{g:'m',skin:SK[0],hair:'short',hairCol:'#7a4a26',beard:true,singlet:'#161616',trim:'#F27121'},'Captain of the Highland Games Ring. Beat him to face Rally.'),{captain:true}),
    ]},
   {id:'newcastle', z:2, name:'Tyneside Mat Works', city:'Newcastle', lvl:13, icon:'🌁', style:'strength', boss:'paws', x:130, y:1300,
    blurb:'The UK circuit begins. Paws the Bear guards the bridge and his suplex is famous.',
