@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="description" content="Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
 <title>WRSTL Legends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Nunito:wght@400;700;800;900&display=swap">
@@ -746,34 +746,173 @@ function ping(reason){
 }
 
 // ---------- sound ----------
-let AC = null;
-function ac(){ if(!S.sound) return null; try{ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){ AC=null; } return AC; }
+// Everything is generated in the browser with WebAudio — no sound files to download.
+let AC = null, MASTER = null;
+function ac(){
+  if(!S.sound) return null;
+  try{
+    if(!AC){
+      AC = new (window.AudioContext||window.webkitAudioContext)();
+      MASTER = AC.createGain(); MASTER.gain.value = .9; MASTER.connect(AC.destination);
+    }
+    if(AC.state==='suspended') AC.resume();
+  }catch(e){ AC=null; }
+  return AC;
+}
 function tone(f=440, d=.12, type='sine', vol=.12, when=0, slide=0){
   const a = ac(); if(!a) return;
   const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+when;
   o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide), t+d);
   g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
-  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.02);
+  o.connect(g); g.connect(MASTER); o.start(t); o.stop(t+d+.02);
 }
-function noise(d=.6, vol=.08, when=0){
+// short burst of filtered noise — the basis of slaps, thuds and crowd swells
+function noiseBurst({d=.3, vol=.08, when=0, type='bandpass', freq=1200, q=.7, sweep=0, curve=2}={}){
   const a = ac(); if(!a) return;
-  const len = a.sampleRate*d, buf=a.createBuffer(1,len,a.sampleRate), dt=buf.getChannelData(0);
-  for(let i=0;i<len;i++) dt[i]=(Math.random()*2-1)*(1-i/len);
-  const s=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain(); f.type='bandpass'; f.frequency.value=1200; f.Q.value=.6;
-  g.gain.value=vol; s.buffer=buf; s.connect(f); f.connect(g); g.connect(a.destination); s.start(a.currentTime+when);
+  const len = Math.max(1, Math.floor(a.sampleRate*d)), buf=a.createBuffer(1,len,a.sampleRate), dt=buf.getChannelData(0);
+  for(let i=0;i<len;i++) dt[i]=(Math.random()*2-1)*Math.pow(1-i/len, curve);
+  const s=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain(), t=a.currentTime+when;
+  f.type=type; f.frequency.setValueAtTime(freq,t); if(sweep) f.frequency.exponentialRampToValueAtTime(Math.max(60,freq+sweep), t+d);
+  f.Q.value=q; g.gain.value=vol;
+  s.buffer=buf; s.connect(f); f.connect(g); g.connect(MASTER); s.start(t);
 }
+function noise(d=.6, vol=.08, when=0){ noiseBurst({d, vol, when, freq:1200, q:.6}); }
+
+// ---- referee's whistle: two close tones with a fast warble, like a pea whistle ----
+function whistleBlow({dur=.45, when=0, vol=.16}={}){
+  const a = ac(); if(!a) return;
+  const t = a.currentTime + when;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t+.03);
+  g.gain.setValueAtTime(vol, t+dur-.08);
+  g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+  g.connect(MASTER);
+  // the pea rattling inside the whistle
+  const lfo = a.createOscillator(), lfoG = a.createGain();
+  lfo.type='sine'; lfo.frequency.value = 22; lfoG.gain.value = 130;
+  lfo.connect(lfoG);
+  [2650, 3450].forEach((f,i)=>{
+    const o = a.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(f, t);
+    const og = a.createGain(); og.gain.value = i? .45 : 1;
+    lfoG.connect(o.frequency);
+    o.connect(og); og.connect(g); o.start(t); o.stop(t+dur+.02);
+  });
+  lfo.start(t); lfo.stop(t+dur+.02);
+  // the breath behind it
+  noiseBurst({d:dur*.5, vol:vol*.25, when, type:'highpass', freq:2200, q:.4, curve:1});
+}
+
+// ---- the crowd: a looping bed of noise that swells when something happens ----
+let crowd = null;
+function crowdStart(level=1){
+  const a = ac(); if(!a) return;
+  if(crowd){ crowdSet(level); return; }
+  const secs = 4, len = a.sampleRate*secs;
+  const buf = a.createBuffer(2, len, a.sampleRate);
+  for(let ch=0; ch<2; ch++){
+    const dt = buf.getChannelData(ch);
+    let b0=0,b1=0,b2=0;
+    for(let i=0;i<len;i++){
+      const w = Math.random()*2-1;                 // pink-ish noise = a hall full of people
+      b0 = .99765*b0 + w*.0990460; b1 = .96300*b1 + w*.0908426; b2 = .57000*b2 + w*.1848980;
+      let v = (b0+b1+b2+w*.0362) * .35;
+      v *= 1 + .25*Math.sin(i/a.sampleRate*2*Math.PI*0.37 + ch); // slow murmur
+      dt[i] = v;
+    }
+  }
+  const src = a.createBufferSource(); src.buffer = buf; src.loop = true;
+  const f = a.createBiquadFilter(); f.type='lowpass'; f.frequency.value = 1100; f.Q.value = .3;
+  const g = a.createGain(); g.gain.value = 0;
+  src.connect(f); f.connect(g); g.connect(MASTER);
+  src.start();
+  crowd = {src, g, f, base:0};
+  crowdSet(level);
+}
+function crowdSet(level){
+  const a = ac(); if(!a || !crowd) return;
+  const v = clamp(level, 0, 1) * .12;
+  crowd.base = v;
+  crowd.g.gain.cancelScheduledValues(a.currentTime);
+  crowd.g.gain.setValueAtTime(crowd.g.gain.value, a.currentTime);
+  crowd.g.gain.linearRampToValueAtTime(v, a.currentTime + 1.2);
+}
+function crowdStop(){
+  // deliberately uses AC rather than ac(): this has to work even when the
+  // player has just switched the sound off
+  const a = AC; if(!a || !crowd) return;
+  const c = crowd; crowd = null;
+  try{
+    c.g.gain.cancelScheduledValues(a.currentTime);
+    c.g.gain.setValueAtTime(c.g.gain.value, a.currentTime);
+    c.g.gain.linearRampToValueAtTime(0, a.currentTime + .8);
+    setTimeout(()=>{ try{ c.src.stop(); }catch(e){} }, 1100);
+  }catch(e){}
+}
+// a swell of noise over the crowd bed: size 0..1, and a brighter filter for a proper roar
+function crowdSwell(size=.5, dur=1.2){
+  const a = ac(); if(!a) return;
+  noiseBurst({d:dur, vol:.05+.09*size, freq:900+900*size, q:.35, type:'bandpass', sweep:400*size, curve:1.4});
+  if(size>.6) noiseBurst({d:dur*.8, vol:.05*size, when:.05, type:'highpass', freq:2000, q:.3, curve:1.2});
+  if(!crowd) return;
+  const peak = Math.min(.3, crowd.base + .1 + .16*size), t = a.currentTime;
+  crowd.g.gain.cancelScheduledValues(t);
+  crowd.g.gain.setValueAtTime(crowd.g.gain.value, t);
+  crowd.g.gain.linearRampToValueAtTime(peak, t+.12);
+  crowd.g.gain.linearRampToValueAtTime(crowd.base, t+dur+.4);
+  crowd.f.frequency.cancelScheduledValues(t);
+  crowd.f.frequency.setValueAtTime(1100, t);
+  crowd.f.frequency.linearRampToValueAtTime(1100+1800*size, t+.15);
+  crowd.f.frequency.linearRampToValueAtTime(1100, t+dur+.4);
+}
+
 const SFX = {
   tap:()=>tone(660,.06,'square',.05),
-  whistle:()=>{ tone(2100,.12,'sine',.1); tone(2400,.28,'sine',.1,.13); },
+  // referee
+  whistle:()=>whistleBlow({dur:.4}),
+  whistleStart:()=>{ whistleBlow({dur:.16, vol:.15}); whistleBlow({dur:.16, vol:.15, when:.2}); whistleBlow({dur:.5, vol:.17, when:.4}); },
+  whistleEnd:()=>{ whistleBlow({dur:.7, vol:.18}); },
+  // contact
+  slap:()=>{ noiseBurst({d:.09, vol:.16, freq:2600, q:1.2, sweep:-1400, curve:3}); tone(190,.07,'triangle',.08,0,-70); },
+  thud:()=>{ tone(95,.24,'sine',.26,0,-45); noiseBurst({d:.16, vol:.10, type:'lowpass', freq:700, q:.5, curve:3}); },
+  slam:()=>{ tone(70,.42,'sine',.34,0,-32); noiseBurst({d:.3, vol:.16, type:'lowpass', freq:900, q:.4, curve:2.4}); noiseBurst({d:.1, vol:.12, when:.01, freq:2200, q:1, sweep:-1200, curve:3}); },
+  grapple:()=>{ noiseBurst({d:.2, vol:.06, type:'bandpass', freq:900, q:.8, sweep:500, curve:1.6}); },
+  // crowd
+  cheer:(size=.6)=>crowdSwell(size, 1.3),
+  roar:()=>crowdSwell(1, 2),
+  groan:()=>{ crowdSwell(.25, 1); tone(220,.5,'sine',.05,0,-70); },
+  crowdStart, crowdStop, crowdSet,
+  // ui
   good:()=>{ tone(520,.1,'triangle',.12); tone(780,.16,'triangle',.12,.08); },
-  perfect:()=>{ [523,659,784,1046].forEach((f,i)=>tone(f,.16,'triangle',.12,i*.07)); noise(.9,.06,.1); },
+  perfect:()=>{ [523,659,784,1046].forEach((f,i)=>tone(f,.16,'triangle',.12,i*.07)); },
   bad:()=>tone(220,.25,'sawtooth',.07,0,-90),
-  thud:()=>tone(90,.2,'sine',.25,0,-40),
-  cheer:()=>noise(1.4,.09),
   coin:()=>{ tone(988,.07,'square',.05); tone(1319,.12,'square',.05,.07); },
   level:()=>[392,523,659,784,1046].forEach((f,i)=>tone(f,.2,'triangle',.11,i*.09)),
   rattle:()=>{ for(let i=0;i<8;i++) tone(300+Math.random()*300,.04,'square',.03,i*.08); },
 };
+// stop the crowd if the player leaves the tab or turns the sound off
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) crowdStop(); });
+
+// ---------- installable app ----------
+// The game can be installed to the home screen and played with no signal.
+let deferredInstall = null;
+const isStandalone = ()=> window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+const isIOS = ()=> /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const canInstall = ()=> !isStandalone() && (!!deferredInstall || isIOS());
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall = e; if(screen==='more') render(); });
+window.addEventListener('appinstalled', ()=>{ deferredInstall = null; toast('🎉 Installed! Look for WRSTL Legends on your home screen.', 3500); if(screen==='more') render(); });
+if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing; if(!nw) return;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller) toast('✨ A new version is ready — it will load next time you open the app.', 4500);
+        });
+      });
+    }).catch(()=>{});
+  });
+}
 
 // ---------- UI helpers ----------
 let screen = 'title', UI = {};
@@ -813,7 +952,7 @@ function nav(){
   const t=[['map','🗺️','Map'],['wrestler','🤼','Wrestler'],['passport','📘','Passport'],['more','⚙️','More']];
   return `<nav class="nav">${t.map(([k,i,n])=>`<button data-go="${k}" class="${screen===k||(k==='map'&&screen==='gym')?'on':''}"><b>${i}</b>${n}${k==='wrestler'&&S.pts>0?`<span class="dot">${S.pts}</span>`:''}</button>`).join('')}</nav>`;
 }
-function go(s, opts={}){ screen = s; Object.assign(UI, opts); window.scrollTo(0, 0); render(); }
+function go(s, opts={}){ if(s!=='bout' && s!=='drill' && typeof crowdStop==='function') crowdStop(); screen = s; Object.assign(UI, opts); window.scrollTo(0, 0); render(); }
 function shortName(n){ const f=n.split(' ')[0]; return /^(Wee|Big|The|Iron|Kaan|Leo|Rhys|Jordan|Kenji)$/.test(f) ? n.replace(/ "[^"]*"/,'') : f; }
 
 function render(){
@@ -1039,6 +1178,7 @@ function crPath(pts){
   }
   return d;
 }
+const CITY_AT_BOTTOM = true;
 function mapBackground(){
   const r = seeded(7); let s='';
   s+=`<defs>
@@ -1049,7 +1189,11 @@ function mapBackground(){
     <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8" stop-opacity=".45"/><stop offset="1" stop-color="#fff6c8" stop-opacity="0"/></linearGradient>
     <clipPath id="avclip"><circle r="21"/></clipPath>
   </defs>`;
-  s+=`<rect x="0" y="0" width="400" height="700" fill="url(#z3)"/><rect x="0" y="700" width="400" height="700" fill="url(#z2)"/><rect x="0" y="1400" width="400" height="700" fill="url(#z1)"/><rect x="0" y="2100" width="400" height="700" fill="url(#z0)"/>`;
+  // the bottom two bands swap their look when Glasgow isn't chapter 1
+  const bandLo = CITY_AT_BOTTOM ? 'z0' : 'z1', bandHi = CITY_AT_BOTTOM ? 'z1' : 'z0';
+  const gOff = CITY_AT_BOTTOM ? 0 : -700;   // shift the city art
+  const sOff = CITY_AT_BOTTOM ? 0 :  700;   // shift the highland art
+  s+=`<rect x="0" y="0" width="400" height="700" fill="url(#z3)"/><rect x="0" y="700" width="400" height="700" fill="url(#z2)"/><rect x="0" y="1400" width="400" height="700" fill="url(#${bandHi})"/><rect x="0" y="2100" width="400" height="700" fill="url(#${bandLo})"/>`;
   // WORLD: stars, globe, arena
   for(let i=0;i<90;i++) s+=`<circle cx="${(r()*400).toFixed(0)}" cy="${(r()*690).toFixed(0)}" r="${(r()*1.6+.3).toFixed(1)}" fill="#fff" opacity="${(r()*.7+.2).toFixed(2)}"/>`;
   s+=`<g opacity=".18" stroke="#8fb4ff" fill="none" stroke-width="2" transform="translate(-240,-160)"><circle cx="330" cy="600" r="95"/><ellipse cx="330" cy="600" rx="40" ry="95"/><ellipse cx="330" cy="600" rx="75" ry="95"/><line x1="235" y1="600" x2="425" y2="600"/><path d="M245 555 Q330 575 415 555 M245 645 Q330 625 415 645"/></g>`;
@@ -1062,16 +1206,16 @@ function mapBackground(){
   s+=`<path d="M30 1296 Q60 1250 90 1296 M90 1296 Q120 1250 150 1296" stroke="#c9c2b0" stroke-width="3" fill="none" opacity=".6"/>`;
   s+=`<g opacity=".55" fill="#15180f"><rect x="355" y="770" width="16" height="70"/><polygon points="351,770 375,770 363,748"/><circle cx="363" cy="786" r="6" fill="#f5c542"/></g>`;
   // SCOTLAND: mountains, loch, castle, saltire
-  for(let i=0;i<9;i++){ const x=r()*420-20, base=1480+r()*560, h=60+r()*90, w=70+r()*70;
+  for(let i=0;i<9;i++){ const x=r()*420-20, base=1480+sOff+r()*560, h=60+r()*90, w=70+r()*70;
     s+=`<polygon points="${(x-w/2).toFixed(0)},${base.toFixed(0)} ${x.toFixed(0)},${(base-h).toFixed(0)} ${(x+w/2).toFixed(0)},${base.toFixed(0)}" fill="#244a37" opacity=".85"/><polygon points="${(x-w*.14).toFixed(0)},${(base-h*.72).toFixed(0)} ${x.toFixed(0)},${(base-h).toFixed(0)} ${(x+w*.14).toFixed(0)},${(base-h*.72).toFixed(0)}" fill="#dfe8e3" opacity=".6"/>`; }
-  s+=`<ellipse cx="330" cy="1640" rx="50" ry="18" fill="#2c6aa0" opacity=".7"/><ellipse cx="60" cy="1560" rx="40" ry="12" fill="#2c6aa0" opacity=".6"/>`;
-  s+=`<g fill="#0c1a13" opacity=".9"><rect x="30" y="2050" width="70" height="30"/><rect x="26" y="2034" width="16" height="46"/><rect x="88" y="2034" width="16" height="46"/><rect x="55" y="2040" width="20" height="40"/></g>`;
-  s+=`<g transform="translate(350,1450)"><line x1="0" y1="0" x2="0" y2="50" stroke="#ccc" stroke-width="2"/><rect x="0" y="0" width="34" height="22" fill="#005eb8"/><path d="M0 0 L34 22 M34 0 L0 22" stroke="#fff" stroke-width="4"/></g>`;
+  s+=`<ellipse cx="330" cy="${1640+sOff}" rx="50" ry="18" fill="#2c6aa0" opacity=".7"/><ellipse cx="60" cy="${1560+sOff}" rx="40" ry="12" fill="#2c6aa0" opacity=".6"/>`;
+  s+=`<g fill="#0c1a13" opacity=".9"><rect x="30" y="${2050+sOff}" width="70" height="30"/><rect x="26" y="${2034+sOff}" width="16" height="46"/><rect x="88" y="${2034+sOff}" width="16" height="46"/><rect x="55" y="${2040+sOff}" width="20" height="40"/></g>`;
+  s+=`<g transform="translate(350,${1450+sOff})"><line x1="0" y1="0" x2="0" y2="50" stroke="#ccc" stroke-width="2"/><rect x="0" y="0" width="34" height="22" fill="#005eb8"/><path d="M0 0 L34 22 M34 0 L0 22" stroke="#fff" stroke-width="4"/></g>`;
   // GLASGOW: river Clyde, tenements, crane
-  s+=`<path d="M-10 2470 C80 2430 150 2520 230 2480 S360 2440 410 2470" stroke="#1f5a95" stroke-width="30" fill="none"/><path d="M-10 2470 C80 2430 150 2520 230 2480 S360 2440 410 2470" stroke="#5fa0dd" stroke-width="2" fill="none" opacity=".6"/>`;
-  s+=`<g transform="translate(335,2395)" stroke="#0a1220" stroke-width="5" fill="none"><line x1="0" y1="0" x2="0" y2="70"/><line x1="-30" y1="0" x2="45" y2="0"/><line x1="40" y1="0" x2="40" y2="25" stroke-width="2"/></g>`;
-  let x=0; while(x<400){ const w=34+r()*30, h=40+r()*50; s+=`<rect x="${x.toFixed(0)}" y="${(2800-h).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="#0b1322"/>`;
-    for(let wy=2800-h+8; wy<2790; wy+=14) for(let wx=x+5; wx<x+w-6; wx+=10) if(r()>.45) s+=`<rect x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="5" height="7" fill="#f5c542" opacity="${(r()*.5+.3).toFixed(2)}"/>`;
+  s+=`<path d="M-10 ${2470+gOff} C80 ${2430+gOff} 150 ${2520+gOff} 230 ${2480+gOff} S360 ${2440+gOff} 410 ${2470+gOff}" stroke="#1f5a95" stroke-width="30" fill="none"/><path d="M-10 ${2470+gOff} C80 ${2430+gOff} 150 ${2520+gOff} 230 ${2480+gOff} S360 ${2440+gOff} 410 ${2470+gOff}" stroke="#5fa0dd" stroke-width="2" fill="none" opacity=".6"/>`;
+  s+=`<g transform="translate(335,${2395+gOff})" stroke="#0a1220" stroke-width="5" fill="none"><line x1="0" y1="0" x2="0" y2="70"/><line x1="-30" y1="0" x2="45" y2="0"/><line x1="40" y1="0" x2="40" y2="25" stroke-width="2"/></g>`;
+  let x=0; while(x<400){ const w=34+r()*30, h=40+r()*50; s+=`<rect x="${x.toFixed(0)}" y="${(2800+gOff-h).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="#0b1322"/>`;
+    for(let wy=2800+gOff-h+8; wy<2790+gOff; wy+=14) for(let wx=x+5; wx<x+w-6; wx+=10) if(r()>.45) s+=`<rect x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="5" height="7" fill="#f5c542" opacity="${(r()*.5+.3).toFixed(2)}"/>`;
     x+=w+2; }
   // zone labels & dividers
   ZONES.forEach((z,i)=>{ const top = 2100-700*i;
@@ -1284,7 +1428,10 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
 // ---------- more ----------
 RENDER.more = ()=>`${hud()}<div class="screen">
   <div style="text-align:center"><img src="${IMG.logo_phx}" alt="WRSTL" style="width:min(340px,92%);display:block;margin:0 auto"><div class="small muted" style="margin-top:-4px">More than just wrestling</div></div>
-  <div style="margin:12px 0">${siteButton()}</div>
+  <div style="margin:12px 0;display:grid;gap:10px">
+    ${canInstall()?`<button class="btn block" data-act="installApp">📲 Install WRSTL Legends</button>`:isStandalone()?`<div class="pill" style="justify-content:center;padding:8px">📱 Running as an app · works offline</div>`:''}
+    ${siteButton()}
+  </div>
   <h2>More</h2>
   <div class="card" style="margin-top:10px">${howToPlay()}</div>
   <div class="card" style="margin-top:12px">${howToScore()}</div>
@@ -1348,7 +1495,26 @@ async function ownerLoad(key){
     <button class="btn block" style="margin-top:8px" data-act="close">Close</button>`);
 }
 ACTIONS.ownerRefresh = ()=>ownerLoad(UI.ownerKey);
-ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; save(); render(); if(S.sound) SFX.good(); };
+ACTIONS.installApp = async ()=>{
+  if(deferredInstall){
+    deferredInstall.prompt();
+    try{ await deferredInstall.userChoice; }catch(e){}
+    deferredInstall = null; render(); return;
+  }
+  // iPhone and iPad don't offer a button, so show them where it is
+  modal(`<div style="text-align:center">
+    <img src="${IMG.logo_h}" alt="WRSTL" style="width:150px">
+    <h2 style="margin-top:6px">Add to your home screen</h2>
+    <p class="small muted">It becomes a proper app: its own icon, no browser bars, and it works with no signal.</p>
+    <div class="missions" style="text-align:left;margin-top:10px">
+      <div class="mis"><span class="mi">1</span><div class="grow"><b>Tap the Share button</b><div class="small muted">The square with an arrow pointing up, at the bottom of Safari.</div></div></div>
+      <div class="mis"><span class="mi">2</span><div class="grow"><b>Scroll down and tap "Add to Home Screen"</b></div></div>
+      <div class="mis"><span class="mi">3</span><div class="grow"><b>Tap Add</b><div class="small muted">WRSTL Legends appears with your other apps.</div></div></div>
+    </div>
+    <p class="small muted" style="margin-top:8px">It has to be Safari — Chrome on iPhone can't add apps to the home screen.</p>
+    <button class="btn block" style="margin-top:10px" data-act="close">Got it</button></div>`);
+};
+ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; if(!S.sound) crowdStop(); save(); render(); if(S.sound) SFX.whistle(); };
 ACTIONS.resetAll = ()=>modal(`<h2>Delete everything?</h2><p>This removes your career, cards, kit and unlocks from this device. It can't be undone.</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="close">Keep it</button><button class="btn grow" data-act="confirmReset" style="background:var(--red)">Delete</button></div>`);
 ACTIONS.confirmReset = ()=>{ closeModal(); S = freshSave(); save(); go('title'); };
@@ -1408,9 +1574,14 @@ function cardDZone(){ let z=0; for(const e of cardsEquipped()) if(e.c.dzone) z+=
 function cardTurn(){ let z=0, dbl=false; for(const e of cardsEquipped()){ if(e.c.turn) z+=e.c.turn(e.l); if(e.c.double) dbl=true; } return {z, dbl}; }
 function cardComeback(){ let z=0; for(const e of cardsEquipped()) if(e.c.comeback) z=Math.max(z, e.c.comeback(e.l)); return z; }
 
+function crowdSize(opp){
+  const g = GYMS[gymIdx(opp.gym)];
+  return clamp([.28,.5,.75,1][g.z] + (opp.champ?.12:0), .2, 1);
+}
 function startBout(opp){
   B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false};
   screen = 'bout'; UI.tap = null; UI.choose = null;
+  SFX.crowdStart(crowdSize(opp)*.6);
   app.innerHTML = boutShell(); window.scrollTo(0,0);
   runBout();
 }
@@ -1495,18 +1666,19 @@ async function runBout(){
     <div class="row" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:12px">${cardsEquipped().map(e=>`<span class="pill r-${e.c.r}" style="border:1px solid var(--rc)">${e.c.i} ${esc(e.c.n)} Lv${e.l}</span>`).join('')||'<span class="small muted">No move cards equipped</span>'}</div>
     <button class="btn block" data-act="boutGo">🤝 Shake hands</button></div>`);
   await waitAct();
-  SFX.whistle(); say('Wrestle!');
+  SFX.crowdSet(crowdSize(o));
+  SFX.whistleStart(); say('Wrestle!');
   if(!S.tut){
     S.tut = true; save();
     modal(`<img src="${IMG.mv_handfight}" alt="" style="width:100%;max-height:130px;object-fit:contain">${howToPlay()}<button class="btn block" style="margin-top:12px" data-act="closeTut">Got it — let's wrestle</button>`);
     await new Promise(res=>{ ACTIONS.closeTut = ()=>{ closeModal(); res(); }; });
   }
   while(true){
-    if(B.ex===3){ stage(`<div class="panel" style="text-align:center"><h2>Period 2</h2><p class="muted">Score: ${B.my} - ${B.op}. ${B.my<B.op?"You're behind — dig deep!":B.my>B.op?'Keep the pressure on!':"It's all square!"}</p></div>`); shout(); SFX.whistle(); await sleep(1500); }
+    if(B.ex===3){ stage(`<div class="panel" style="text-align:center"><h2>Period 2</h2><p class="muted">Score: ${B.my} - ${B.op}. ${B.my<B.op?"You're behind — dig deep!":B.my>B.op?'Keep the pressure on!':"It's all square!"}</p></div>`); shout(); SFX.whistle(); SFX.cheer(.35); await sleep(1500); }
     await exchange();
     B.ex++; pips();
     const diff = B.my-B.op;
-    if(Math.abs(diff)>=10){ say('Technical superiority!', 2000); stage(`<div class="panel" style="text-align:center">${sceneImg('sc_referee',135)}<div class="verdict ${diff>0?'good':'bad'}">Tusk stops it — technical superiority!</div></div>`); await sleep(1400); return endBout(diff>0, 'Technical superiority'); }
+    if(Math.abs(diff)>=10){ SFX.whistleEnd(); if(diff>0) SFX.roar(); else SFX.groan(); say('Technical superiority!', 2000); stage(`<div class="panel" style="text-align:center">${sceneImg('sc_referee',135)}<div class="verdict ${diff>0?'good':'bad'}">Tusk stops it — technical superiority!</div></div>`); await sleep(1400); return endBout(diff>0, 'Technical superiority'); }
     if(B.ex>=6){
       if(B.my!==B.op) return endBout(B.my>B.op, 'Decision');
       if(B.ex===6 && B.last){ say('Last point wins!', 1800); await sleep(900); return endBout(B.last==='me', 'Criteria: last point scored'); }
@@ -1531,11 +1703,11 @@ async function exchange(){
   <div class="choices">${Object.keys(MOVES).map((k,i)=>`<button class="choice" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats ${MOVES[MOVES[k].beats].n}</small></button>`).join('')}</div>
   <div class="hint kbd">Keys 1 · 2 · 3</div>`);
   const choice = await new Promise(res=>{ UI.choose = m=>{ UI.choose=null; res(m); }; ACTIONS.choose = d=>UI.choose && UI.choose(d.m); });
-  SFX.tap(); B.hist.push(choice);
+  SFX.tap(); SFX.grapple(); B.hist.push(choice);
   const res = choice===plan ? 'scramble' : MOVES[choice].beats===plan ? 'attack' : 'defend';
   const hh = B.hist.length;
   if((unlocked('passivity') || hb==='rulebook') && hh>=3 && B.hist[hh-1]==='SPRAWL' && B.hist[hh-2]==='SPRAWL' && B.hist[hh-3]==='SPRAWL'){
-    B.op += 1; B.last='op'; B.theyScored = true; updScore(); floatPts('op','+1','#ff8a7a'); SFX.bad(); say('Tusk: Passivity! Action!', 2000);
+    B.op += 1; B.last='op'; B.theyScored = true; updScore(); floatPts('op','+1','#ff8a7a'); SFX.whistle(); setTimeout(()=>SFX.bad(), 250); say('Tusk: Passivity! Action!', 2000);
     stage(`<div class="panel" style="text-align:center">${sceneImg('sc_referee',135)}<div class="verdict bad">Tusk: "Passivity — Action!" 1 point to ${esc(shortName(o.name))}.</div></div>`); await sleep(1700);
   }
   stage(`<div class="panel"><div class="reveal">
@@ -1603,12 +1775,18 @@ async function exchange(){
     text = `Takedown +${base}`; kind = 'good';
   } else if(myP>0){ const fl = cardFollow(); if(fl && Math.random()<fl.p){ myP+=2; follow = `${fl.n} — roll! +2`; } }
   if(myP>=4 && res==='attack'){ const bg = cardBig(type); const art = (bg && MOVE_ART[bg.k]) || {SHOOT:'mv_doubleleg', TIE:'mv_throw'}[type]; if(art) await moveSplash(art, bg ? bg.c.n : (type==='SHOOT'?'Big double leg!':'Huge throw!')); }
-  if(myP>0){ lunge('me'); hit('op'); B.my+=myP; B.last='me'; floatPts('me', '+'+myP, myP>=4?'#f5c542':'#39d17a'); (myP>=4?SFX.perfect:SFX.good)(); say(myP>=4?`${myP} points!`:myP===1?'One!':`${myP}!`); if(myP>=4) SFX.cheer(); }
+  if(myP>0){ lunge('me'); hit('op'); B.my+=myP; B.last='me'; floatPts('me', '+'+myP, myP>=4?'#f5c542':'#39d17a');
+    if(myP>=4){ SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); }
+    else if(myP>=2){ SFX.thud(); setTimeout(()=>SFX.good(), 70); SFX.cheer(.55); }
+    else { SFX.slap(); SFX.cheer(.3); }
+    say(myP>=4?`${myP} points!`:myP===1?'One!':`${myP}!`); }
   if(myP>=4 && res==='attack') mission('big4');
   if((myP>0 || text.startsWith('Takedown')) && B.theyScored && !B.answered){ B.answered = true; mission('answerBack'); }
   if((myP>0 || text.startsWith('Takedown')) && B.ex===5) mission('lateScore');
-  if(opP>0){ lunge('op'); hit('me'); B.op+=opP; B.last='op'; B.theyScored = true; floatPts('op', '+'+opP, '#ff8a7a'); SFX.thud(); say(opP>=4?'Four!':opP===1?'One!':'Two!'); }
-  if(!myP && !opP){ say('No score!'); SFX.tap(); }
+  if(opP>0){ lunge('op'); hit('me'); B.op+=opP; B.last='op'; B.theyScored = true; floatPts('op', '+'+opP, '#ff8a7a');
+    if(opP>=4) SFX.slam(); else SFX.thud();
+    SFX.groan(); say(opP>=4?'Four!':opP===1?'One!':'Two!'); }
+  if(!myP && !opP){ say('No score!'); SFX.grapple(); }
   if(Math.random()<.35) shout();
   updScore();
   let sc = '';
@@ -1631,7 +1809,7 @@ function moveSplash(img, title){
   const host = document.querySelector('.bout'); if(!host) return Promise.resolve();
   const el = document.createElement('div'); el.className='splash';
   el.innerHTML = `<div><img src="${IMG[img]}" alt=""><b>${esc(title)}</b></div>`;
-  host.appendChild(el); SFX.cheer();
+  host.appendChild(el); SFX.roar();
   return new Promise(res=>setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); }, 250); }, 1250));
 }
 function runMeter(cfg){
@@ -1688,7 +1866,9 @@ function addXP(n){
 async function endBout(win, how){
   const o = B.opp, c = me(), g = GYMS[gymIdx(o.gym)];
   UI.tap=null; UI.choose=null;
-  SFX.whistle(); if(win) setTimeout(SFX.cheer, 250);
+  SFX.whistleEnd();
+  if(win){ setTimeout(()=>SFX.roar(), 300); } else { setTimeout(()=>SFX.groan(), 300); }
+  setTimeout(()=>SFX.crowdStop(), 2200);
   say(win?'Winner!':'Good match!', 2500);
   S.bouts++; if(win) S.wins++;
   let xp = (18 + 10*o.L) * (o.champ?2.5:1) * (c.perks.xp||1);
@@ -1839,8 +2019,8 @@ ACTIONS.drillGo = async d=>{
   for(let rep=0; rep<5; rep++){
     $id('reps').textContent = `Rep ${rep+1} of 5`;
     const q = await runMeter({w:.16, pf:.3, speed:.9+rep*.12, label:`${s.n}: tap in the zone!`, time:3800});
-    if(q==='perfect'){ gain+=.5; xp+=6; SFX.perfect(); say('Perfect rep!'); lunge('me'); }
-    else if(q==='good'){ gain+=.25; xp+=3; SFX.good(); say('Good!'); }
+    if(q==='perfect'){ gain+=.5; xp+=6; SFX.slap(); setTimeout(()=>SFX.perfect(), 60); say('Perfect rep!'); lunge('me'); }
+    else if(q==='good'){ gain+=.25; xp+=3; SFX.thud(); setTimeout(()=>SFX.good(), 60); say('Good!'); }
     else { SFX.bad(); say('Again!'); }
     $id('gain').textContent = `Gain so far: +${gain}`;
     if(Math.random()<.3) shout();
