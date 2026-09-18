@@ -328,6 +328,28 @@ img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:co
 .introskip:active,.introsound:active{transform:scale(.96)}
 .introsound:active{transform:translateX(-50%) scale(.96)}
 
+/* special move — earned at the Phoenix Wrestling Club, six uses, no refills */
+.spbar{width:100%;margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:1px;
+  padding:9px 12px;border-radius:14px;border:2px solid var(--gold);
+  background:linear-gradient(180deg,#43310f,#2a1d09);color:#fff;font-family:inherit;
+  box-shadow:0 0 0 1px rgba(245,197,66,.25),0 4px 14px rgba(245,197,66,.18)}
+.spbar b{font-family:var(--display);font-size:18px;letter-spacing:1px}
+.spbar small{font-size:11px;color:#f0d69a}
+.spbar:active{transform:scale(.98)}
+.spbar[disabled]{opacity:.55;border-color:#6b5a2e;box-shadow:none}
+.spbar.spent{display:block;text-align:center;font-size:12px;color:var(--muted);
+  border-color:var(--line);background:var(--panel2);box-shadow:none;font-weight:700}
+.spcards{display:grid;gap:8px;margin-top:6px}
+.spcard{display:flex;align-items:center;gap:10px;text-align:left;width:100%;
+  background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:10px;color:inherit;font-family:inherit}
+.spcard .ic{font-size:30px;width:42px;text-align:center;flex:0 0 auto}
+.spcard b{font-size:15px}
+.spcard.on{border-color:var(--gold);background:#3a2c10}
+.spcard:active{transform:scale(.99)}
+.sppick{margin-top:10px}
+.spmeter{border-color:var(--gold);box-shadow:0 0 14px rgba(245,197,66,.3)}
+.spmeter .zone{background:rgba(245,197,66,.45);border-left-color:var(--gold);border-right-color:var(--gold)}
+
 </style>
 </head><body><div id="app"></div>
 <script>
@@ -673,6 +695,40 @@ const PACK = [
   {k:'partners', n:1, t:'Train with three different partners: beat all 3 wrestlers at one gym', i:'👥'},
   {k:'handshakes', n:15, t:'Shake hands before and after 15 bouts', i:'🫱'},
 ];
+// ---- Special moves ----
+// Earned once at the Phoenix Wrestling Club. The player picks ONE and carries six
+// uses of it for the rest of the career — they never come back. Each costs 5
+// energy whether it lands or not, and each lands for 5 points: more than anything
+// else in the game. What differs is how hard the bar is and what sits either side
+// of it, so the choice is a real one rather than a coat of paint.
+const SPECIAL_AT   = 'inverness';   // the Phoenix Wrestling Club
+const SPECIAL_USES = 6;
+const SPECIAL_COST = 5;
+const SPECIAL_PTS  = 5;
+const SPECIALS = {
+  lateral:{n:'Lateral Drop', i:'🌪️', by:'Ross McFarlane', art:'mv_throw', scene:'sc_hipthrow_gorilla',
+    d:'Hard to land. Worth 5 points.',
+    long:"The club captain's throw. No tricks and no safety net — just the cleanest 5 points in the game, if you can find the window.",
+    w:.100, speed:1.75},
+  bodylock:{n:'Bodylock Launch', i:'💪', by:'Rally the Hyena', art:'mv_throw', scene:'sc_suplex_rhino',
+    d:'A bigger window — but miss it and they score 2.',
+    long:'Lock your arms round the middle and launch. The easiest of the four to hit, but throw and miss and you land underneath.',
+    w:.128, speed:1.70, missGives:2},
+  cradle:{n:'Rolling Cradle', i:'🌀', by:'Amber the Lynx', art:'mv_handfight', scene:'sc_armdrag_lynx',
+    d:'The hardest to land — but they cannot score on you next exchange.',
+    long:'Scoop the leg, lock the head, roll. A tiny window, and they are still untangling themselves when you come back to the centre.',
+    w:.082, speed:1.85, shield:true},
+  arch:{n:'Phoenix Arch', i:'🔥', by:'Phoenix', art:'mv_firemans', scene:'sc_headlock_panther',
+    d:'Almost impossible — unless you are losing. Much easier when you are behind.',
+    long:'The comeback throw. When you are ahead and comfortable it will not come. When you are behind, something else takes over.',
+    w:.072, behindW:.185, behindBy:2, speed:1.75},
+};
+
+// Difficulty climbs once you leave Scotland. From the British Championships on,
+// every stop is sharper than the last: opponents are stronger and read you better,
+// the bar moves faster and the zone you have to hit gets smaller.
+const LATE_FROM = 6;   // index of the British Championships in GYMS
+
 // Mechanics that unlock as you level up (taught by the characters)
 const UNLOCKS = [
   {k:'turns', after:'aberdeen', by:'Grey', t:"Grey's lesson: think one move ahead. After a takedown you can SETTLE (keep control) or USE IT and try a turn for +2. Miss the turn and they escape for 1.", i:'🧠'},
@@ -694,7 +750,7 @@ const RARITY_ORDER = ['common','rare','epic','legendary'];
 const WRSTL_URL = '';
 // Player tracker: paste the Google Apps Script web app URL here (see wrstl-legends-tracker/Code.gs). Empty = tracking off.
 const TELEMETRY_URL = 'https://script.google.com/macros/s/AKfycbzLFe7BI0qjsFZ9Hcw-kLK8vr4MtuFJESgR4PpTaVuCfXO8t9LFJmWSm42nOzBu44_w/exec';
-const GAME_VER = '1.3';
+const GAME_VER = '1.4';
 
 // ===================== CORE =====================
 const app = document.getElementById('app');
@@ -714,7 +770,8 @@ function freshSave(){
   return {v:2, char:null, name:'', av:null, style:'speed', lvl:1, xp:0, pts:0, stats:null, trained:{}, coins:0, energy:20, energyAt:Date.now(),
     gymWins:{}, stamps:{}, cards:{}, equip:[], kit:{owned:{clubSinglet:1}, eq:{singlet:'clubSinglet'}},
     loc:'hq', phoenix:false, rises:0, sound:true, bouts:0, wins:0, tut:false, seenMapTip:false,
-    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0};
+    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0,
+    sp:'', spUses:0};
 }
 function loadSave(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===2) return Object.assign(freshSave(), s); }catch(e){}
@@ -730,6 +787,7 @@ function startCareer(styleId){
   S.char = 'player'; S.style = styleId; S.careers = (S.careers||0)+1; S.lvl = 1; S.xp = 0; S.pts = 0; S.stats = {...c.stats}; S.trained = {};
   S.gymWins = {}; S.stamps = {}; S.loc = 'hq'; S.coins = Math.max(S.coins||0, 0);
   S.mis = {}; S.bossBeat = {}; S.quiz = {}; S.tees = {}; S.record = []; S.streak = 0; S.lastLoss = false; S.seenUnlock = {};
+  S.sp = ''; S.spUses = 0;   // the special move is earned again on the way up
   if(!S.cards[c.move]) S.cards[c.move] = 1;
   S.equip = [c.move];
   S.energy = maxEnergy(); S.energyAt = Date.now();
@@ -1046,6 +1104,70 @@ function pack(k, n=1){
 // ---- unlocks that grow with level ----
 function unlocked(k){ const u = UNLOCKS.find(x=>x.k===k); return !!(u && S.stamps[u.after]); }
 
+// ---- how much harder this venue is ----
+// 0 everywhere up to the Phoenix Wrestling Club, then it climbs a fifth at a time
+// to 1 at the Games. Everything that scales with difficulty reads this one number.
+function lateRamp(gid){
+  const i = gymIdx(gid);
+  if(i < LATE_FROM) return 0;
+  return clamp((i - LATE_FROM + 1) / (GYMS.length - LATE_FROM), 0, 1);
+}
+
+// ---- the special move: chosen once, six uses, no refills ----
+const spDef = ()=>SPECIALS[S.sp] || null;
+const spLeft = ()=>S.sp ? (S.spUses||0) : 0;
+function specialOwed(){ return !!S.stamps[SPECIAL_AT] && !S.sp; }
+
+function specialCard(k, chosen){
+  const sp = SPECIALS[k];
+  return `<button class="spcard ${chosen?'on':''}" data-act="pickSpecial" data-k="${k}">
+    <div class="ic">${sp.i}</div>
+    <div class="grow"><b>${esc(sp.n)}</b><div class="small" style="color:var(--gold)">${esc(sp.by)}</div>
+    <div class="small">${esc(sp.d)}</div></div></button>`;
+}
+// Coach Phoenix hands the special over. Returns once the player has chosen.
+async function offerSpecial(){
+  if(!specialOwed()) return;
+  await coachWait('You have earned a special move',
+    `<p>You have trained with the whole squad at the <b>Phoenix Wrestling Club</b>. That earns you something nobody below this level has: <b>one special move</b>, all your own.</p>
+     <p class="small">Pick one of the four. You get <b>${SPECIAL_USES} uses of it for the rest of your journey</b> — that is all, so save them for when they count. Each one costs <b>⚡${SPECIAL_COST} energy</b> whether you land it or not, and each one is worth <b>${SPECIAL_PTS} points</b> — more than anything else in wrestling.</p>
+     <p class="small muted">They are all hard to hit. That is the point.</p>`, 'Show me the moves');
+  await new Promise(res=>{
+    modal(`<div class="coachbox"><img src="${coachImg()}" alt="Coach Phoenix"><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><h2 style="font-size:20px">Choose your special move</h2></div></div>
+      <p class="small muted" style="margin:8px 0">Tap one to read it, tap again to take it.</p>
+      <div class="spcards">${Object.keys(SPECIALS).map(k=>specialCard(k)).join('')}</div>`);
+    let open = '';
+    ACTIONS.pickSpecial = d=>{
+      const k = d.k, sp = SPECIALS[k];
+      if(open !== k){                       // first tap: read it
+        open = k; SFX.tap();
+        document.querySelectorAll('.spcard').forEach(b=>b.classList.toggle('on', b.dataset.k===k));
+        const box = document.querySelector('.spcards');
+        document.querySelectorAll('.sppick').forEach(n=>n.remove());
+        const el = document.createElement('div'); el.className='sppick';
+        el.innerHTML = `<p class="small">${esc(sp.long)}</p>
+          <button class="btn gold block" data-act="pickSpecial" data-k="${k}">${sp.i} Take ${esc(sp.n)}</button>`;
+        box.parentNode.appendChild(el);
+        return;
+      }
+      S.sp = k; S.spUses = SPECIAL_USES; save();      // second tap: it's yours
+      SFX.perfect(); SFX.cheer();
+      closeModal();
+      modal(`<div style="text-align:center">
+        ${IMG[sp.art]?`<img src="${IMG[sp.art]}" alt="" style="width:100%;max-height:170px;object-fit:contain">`:''}
+        <div style="font-size:46px">${sp.i}</div><h2 style="color:var(--gold)">${esc(sp.n)}</h2>
+        <p>${esc(sp.long)}</p>
+        <div class="row" style="justify-content:center;gap:8px;margin:12px 0">
+          <span class="pill" style="font-size:15px">🎯 ${SPECIAL_USES} uses</span>
+          <span class="pill" style="font-size:15px">⚡${SPECIAL_COST} each</span>
+          <span class="pill" style="font-size:15px">🏅 ${SPECIAL_PTS} points</span></div>
+        <p class="small muted">In a bout you will see it under the three moves. Six is all you get — there are five venues left.</p>
+        <button class="btn gold block" data-act="spOk">Let's go</button></div>`);
+      ACTIONS.spOk = ()=>{ closeModal(); res(); };
+    };
+  });
+}
+
 // ---- the stamp check: boss beaten AND missions done → Coach Phoenix stamps the passport ----
 function stampReady(gid){ return !!S.bossBeat[gid] && !S.stamps[gid] && missionsDone(gid); }
 async function checkStamp(gid){
@@ -1057,6 +1179,7 @@ async function checkStamp(gid){
   save(); ping('stamp');
   await stampModal(g);
   for(const u of UNLOCKS){ if(u.after===gid && !S.seenUnlock[u.k]){ S.seenUnlock[u.k]=1; save(); await coachWait(`${u.i} New skill: ${u.by}'s lesson`, `<p>${esc(u.t)}</p>`, 'Got it'); } }
+  await offerSpecial();
   if(gid==='olympics') await phoenixModal();
   return true;
 }
@@ -1285,6 +1408,9 @@ AFTER.map = ()=>{
   const cur = GYMS[gymIdx(S.loc)], svg = document.getElementById('map');
   const scale = svg.getBoundingClientRect().width/400;
   window.scrollTo(0, Math.max(0, cur.y*scale - window.innerHeight*.55));
+  // catch-up: a player who was already past the Phoenix club before special moves
+  // existed still gets to choose one, the next time they look at the map
+  if(specialOwed() && !document.querySelector('.modal')) offerSpecial();
 };
 function nodeLen(path, g){
   if(!path._lens){ path._total = path.getTotalLength(); path._lens = {}; }
@@ -1329,8 +1455,9 @@ function makeOpp(g, idx){
   const style = boss ? bd.style : g.style;
   const st = STYLE_INFO[style];
   const base = 4 + 2.2*(L-1);
+  const late = 1 + .12*lateRamp(g.id);      // the back half of the journey is stronger
   const stats = {};
-  STATS.forEach(s=>{ let m = st.stat ? (s.k===st.stat?1.3:0.95) : 1.05; if(boss) m*=1.06; stats[s.k] = Math.round(base*m); });
+  STATS.forEach(s=>{ let m = st.stat ? (s.k===st.stat?1.3:0.95) : 1.05; if(boss) m*=1.06; stats[s.k] = Math.round(base*m*late); });
   if(boss) return {name:bd.name, img:bd.img, L, stats, style, champ:true, gym:g.id, idx, motto:bd.motto, role:bd.role, card:bd.card, power:bd.power, habit:bd.habit};
   const m = g.members[idx];
   return {name:m.name, nick:m.nick, from:m.from, av:m.av, blurb:m.blurb, captain:!!m.captain, L, stats, style, champ:false, gym:g.id, idx};
@@ -1408,6 +1535,14 @@ RENDER.wrestler = ()=>{
         return `<button class="mcard r-${cd.r} ${l?'':'none'} ${S.equip.includes(k)?'eq':''}" data-act="equipCard" data-k="${k}" ${l?'':'disabled'}>
           ${l?`<span class="lvl">Lv${l}</span>`:''}<div class="ic">${l?cd.i:'❔'}</div><div class="nm">${l?esc(cd.n):'Not found'}</div><div class="ef">${l?esc(cd.d(l)):cd.r}</div></button>`;}).join('')}</div>
     </div>
+    ${spDef()?`<div class="card" style="margin-top:12px">
+      <div class="row"><h3 class="grow">Special move</h3><span class="pill" style="background:${spLeft()?'var(--gold)':'#3a3540'};color:${spLeft()?'#111':'#aaa'}">${spLeft()} of ${SPECIAL_USES} left</span></div>
+      <div class="spcard on" style="margin-top:8px;cursor:default">
+        <div class="ic">${spDef().i}</div>
+        <div class="grow"><b>${esc(spDef().n)}</b><div class="small" style="color:var(--gold)">${esc(spDef().by)}</div>
+        <div class="small">${esc(spDef().long)}</div></div></div>
+      <p class="small muted" style="margin:8px 0 0">⚡${SPECIAL_COST} energy each, landed or not · worth ${SPECIAL_PTS} points · they do not come back.</p>
+    </div>`:''}
     <div class="card" style="margin-top:12px">
       <h3>Kit</h3>
       <div class="slots" style="margin-top:8px">${['singlet','shoes','headgear'].map(sl=>{ const it=KIT[S.kit.eq[sl]];
@@ -1602,7 +1737,7 @@ function crowdSize(opp){
   return clamp([.28,.5,.75,1][g.z] + (opp.champ?.12:0), .2, 1);
 }
 function startBout(opp){
-  B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false};
+  B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false, shield:false};
   screen = 'bout'; UI.tap = null; UI.choose = null;
   SFX.crowdStart(crowdSize(opp)*.6);
   app.innerHTML = boutShell(); window.scrollTo(0,0);
@@ -1660,20 +1795,21 @@ function oppMul(){
 }
 function oppPlan(){
   const w = {...STYLE_INFO[B.opp.style].w};
-  const h = B.hist, hb = habitOf();
+  const h = B.hist.filter(x=>MOVES[x]), hb = habitOf(), rp = lateRamp(B.opp.gym);
   if(hb==='fearless' && B.ex<2){ w.SHOOT=.7; w.TIE=.15; w.SPRAWL=.15; }
   if(hb==='forward'){ w.SHOOT=.55; w.TIE=.45; w.SPRAWL=0; }
   if(hb==='counter'){ w.SHOOT=.2; w.TIE=.2; w.SPRAWL=.6; }
   if(hb==='patient'){ w.SPRAWL=Math.max(w.SPRAWL,.45); w.SHOOT=.3; w.TIE=.25; }
-  const repeatP = hb==='patient' ? .85 : .5, favP = hb==='thinker' ? .55 : hb==='all' ? .4 : .25;
+  // the later the venue, the more readable you are to them
+  const repeatP = (hb==='patient' ? .85 : .5) + .15*rp, favP = (hb==='thinker' ? .55 : hb==='all' ? .4 : .25) + .15*rp;
   if(h.length>=2 && h[h.length-1]===h[h.length-2] && Math.random()<repeatP){
     const counter = Object.keys(MOVES).find(k=>MOVES[k].beats===h[h.length-1]);
-    if(!(hb==='forward' && counter==='SPRAWL')) return counter;
+    if(counter && !(hb==='forward' && counter==='SPRAWL')) return counter;
   }
   if(h.length>=3 && Math.random()<favP){ // punish favourite move
     const cnt = {}; h.forEach(x=>cnt[x]=(cnt[x]||0)+1); const fav = Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
     const counter = Object.keys(MOVES).find(k=>MOVES[k].beats===fav);
-    if(!(hb==='forward' && counter==='SPRAWL')) return counter;
+    if(counter && !(hb==='forward' && counter==='SPRAWL')) return counter;
   }
   let r = Math.random(), acc=0; for(const k of Object.keys(w)){ acc+=w[k]; if(r<=acc) return k; } return 'SHOOT';
 }
@@ -1715,7 +1851,9 @@ async function exchange(){
   const o = B.opp, c = me();
   const plan = oppPlan();
   const hb = habitOf();
-  const pRead = clamp(.55 + .03*(statOf('tec')-o.stats.tec*oppMul()) + readBonus() + (o.viz?.08:0) - (hb==='calm'?.12:hb==='all'?.08:0), .3, .93);
+  const ramp = lateRamp(o.gym);
+  const shielded = B.shield; B.shield = false;   // the Rolling Cradle covers one exchange
+  const pRead = clamp(.55 + .03*(statOf('tec')-o.stats.tec*oppMul()) + readBonus() + (o.viz?.08:0) - (hb==='calm'?.12:hb==='all'?.08:0) - .06*ramp, .3, .93);
   const honest = Math.random()<pRead;
   const tellMove = honest ? plan : pick(Object.keys(MOVES).filter(k=>k!==plan));
   stage(`<div class="panel">
@@ -1724,8 +1862,10 @@ async function exchange(){
     <div class="row small" style="margin-top:6px"><span class="muted">Your read</span><div class="readbar grow"><i style="width:${Math.round(pRead*100)}%"></i></div><b>${Math.round(pRead*100)}%</b></div>
   </div>
   <div class="choices">${Object.keys(MOVES).map((k,i)=>`<button class="choice" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats ${MOVES[MOVES[k].beats].n}</small></button>`).join('')}</div>
+  ${specialButton()}
   <div class="hint kbd">Keys 1 · 2 · 3</div>`);
   const choice = await new Promise(res=>{ UI.choose = m=>{ UI.choose=null; res(m); }; ACTIONS.choose = d=>UI.choose && UI.choose(d.m); });
+  if(choice==='SPECIAL'){ await specialExchange(shielded); return; }
   SFX.tap(); SFX.grapple(); B.hist.push(choice);
   const res = choice===plan ? 'scramble' : MOVES[choice].beats===plan ? 'attack' : 'defend';
   const hh = B.hist.length;
@@ -1750,13 +1890,17 @@ async function exchange(){
   const behind = B.op - B.my;
   let comeback = false;
   if(behind >= (c.perks.comebackAt||4)){ w *= 1.2 + cardComeback(); comeback = true; }
-  w = clamp(w, .06, .5);
+  // The later venues do NOT shrink the bar directly — that would just squeeze the
+  // tap window past what a person can hit. They send stronger opponents instead,
+  // and the zone narrows through the stat ratio above, so building your wrestler
+  // is what answers the difficulty.
+  w = clamp(w, .05, .5);
   const tecR = clamp(statOf('tec')/Math.max(1,o.stats.tec), .5, 2.2);
-  const pf = clamp(.26*Math.pow(tecR,.6) + (res==='attack'?cardPerf(type):0), .12, .6);
+  const pf = clamp((.26*Math.pow(tecR,.6) + (res==='attack'?cardPerf(type):0)) * (1 - .15*ramp), .1, .6);
   const conR = clamp(statOf('con')/Math.max(1,o.stats.con), .6, 1.8);
   const fat = 1 + .07*Math.min(B.ex,7)*(c.perks.fatigue||1)*(hb==='tireless'?1.5:1);
-  const speed = (0.85 + .01*o.L) * fat / Math.pow(conR,.5);
-  const q = await runMeter({w, pf, speed, label, comeback, time:4200});
+  const speed = (0.85 + .01*o.L) * fat / Math.pow(conR,.5) * (1 + .12*ramp);
+  const q = await runMeter({w, pf, speed, label, comeback, time:4200 - 600*ramp});
 
   // outcome
   let myP=0, opP=0, text='', kind='mid';
@@ -1804,6 +1948,8 @@ async function exchange(){
     else { SFX.slap(); SFX.cheer(.3); }
     say(myP>=4?`${myP} points!`:myP===1?'One!':`${myP}!`); }
   if(myP>=4 && res==='attack') mission('big4');
+  // the Rolling Cradle: they spend this exchange untangling themselves
+  if(shielded && opP>0){ opP = 0; follow = `${n1} is still untangling from the cradle — no score!`; SFX.good(); }
   if((myP>0 || text.startsWith('Takedown')) && B.theyScored && !B.answered){ B.answered = true; mission('answerBack'); }
   if((myP>0 || text.startsWith('Takedown')) && B.ex===5) mission('lateScore');
   if(opP>0){ lunge('op'); hit('me'); B.op+=opP; B.last='op'; B.theyScored = true; floatPts('op', '+'+opP, '#ff8a7a');
@@ -1825,6 +1971,82 @@ async function exchange(){
   await sleep(sc?1900:1500);
 }
 
+// ---------- the special move ----------
+// Sits under the three ordinary moves once it has been earned. Costs 5 energy to
+// throw whether it lands or not, and there are only ever six of them.
+function specialButton(){
+  const sp = spDef(); if(!sp) return '';
+  const left = spLeft();
+  if(left<=0) return `<div class="spbar spent">${sp.i} ${esc(sp.n)} — all used up</div>`;
+  syncEnergy();
+  const poor = S.energy < SPECIAL_COST;
+  return `<button class="spbar" data-act="special" ${poor?'disabled':''}>
+    <b>${sp.i} ${esc(sp.n)}</b>
+    <small>${poor?`needs ⚡${SPECIAL_COST} — you have ⚡${S.energy}`:`⚡${SPECIAL_COST} · worth ${SPECIAL_PTS} points · ${left} left`}</small></button>`;
+}
+ACTIONS.special = ()=>{ if(UI.choose) UI.choose('SPECIAL'); };
+
+async function specialExchange(shielded){
+  const o = B.opp, sp = spDef(), n1 = shortName(o.name);
+  if(!spendEnergy(SPECIAL_COST)){ SFX.bad(); toast('Not enough energy for that.', 2200); return; }
+  S.spUses = Math.max(0, (S.spUses||0)-1); save();
+  B.hist.push('SPECIAL');
+  let cover = shielded;              // an unspent Rolling Cradle carries over
+  SFX.tap(); SFX.grapple();
+
+  const behind = B.op - B.my;
+  const onSong = !!(sp.behindW && behind >= (sp.behindBy||2));
+  const ramp = lateRamp(o.gym);
+  const tecR = clamp(statOf('tec')/Math.max(1,o.stats.tec), .5, 2.2);
+  let w = onSong ? sp.behindW : sp.w;
+  w *= 1 + .12*(tecR-1);        // a technical wrestler finds the window a little more often
+  w *= 1 - .18*ramp;            // and it is harder the further you go
+  w = clamp(w, .05, .21);
+
+  stage(`<div class="panel" style="text-align:center">
+    <div class="small muted">SPECIAL MOVE · ${spLeft()} left after this</div>
+    <div style="font-size:44px;line-height:1.1">${sp.i}</div>
+    <h2 style="margin:2px 0">${esc(sp.n)}</h2>
+    <div class="small muted">${esc(sp.d)}</div>
+    ${onSong?'<div class="verdict good" style="margin-top:8px">You are behind — the arch is there!</div>':''}</div>`);
+  SFX.whistle();
+  await sleep(1100);
+
+  const q = await runMeter({w, pf:0, speed:sp.speed*(1+.12*ramp), label:`${sp.n} — one chance!`, time:3000, special:true});
+
+  if(q!=='miss'){
+    B.my += SPECIAL_PTS; B.last='me'; updScore();
+    lunge('me'); hit('op'); floatPts('me','+'+SPECIAL_PTS,'#f5c542');
+    SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); SFX.cheer(.9);
+    say(`${SPECIAL_PTS} points!`, 2200);
+    mission('big4');
+    if(sp.shield) B.shield = true;
+    await moveSplash(sp.art, sp.n+'!');
+    stage(`<div class="panel" style="text-align:center"><div class="small muted">⭐ SPECIAL LANDED</div>
+      ${sceneImg(sp.scene)}
+      <div class="verdict good" style="font-size:24px">${esc(sp.n)} — ${SPECIAL_PTS} points!</div>
+      ${sp.shield?`<div class="verdict good">${esc(n1)} is tangled up — they cannot score next exchange.</div>`:''}</div>`);
+  } else {
+    SFX.bad(); setTimeout(()=>SFX.groan(), 120);
+    let extra = '';
+    if(sp.missGives && cover){                 // a cradle from last exchange covers the fall
+      cover = false;
+      extra = `<div class="verdict good">${esc(n1)} is still tangled up and cannot punish it.</div>`;
+    } else if(sp.missGives){
+      B.op += sp.missGives; B.last='op'; B.theyScored = true; updScore();
+      hit('me'); floatPts('op','+'+sp.missGives,'#ff8a7a'); SFX.thud();
+      extra = `<div class="verdict bad">${esc(n1)} rides the launch down — ${sp.missGives} points to them.</div>`;
+    }
+    say('Missed it!');
+    stage(`<div class="panel" style="text-align:center"><div class="small muted">❌ SPECIAL MISSED</div>
+      <div style="font-size:40px">${sp.i}</div>
+      <div class="verdict bad" style="font-size:22px">No good — ${esc(n1)} felt it coming.</div>${extra}
+      <p class="small muted" style="margin-top:6px">${spLeft()?`${spLeft()} left. The energy is gone either way.`:'That was your last one.'}</p></div>`);
+  }
+  if(cover) B.shield = true;
+  await sleep(2000);
+}
+
 let lastScene = '';
 function scene(kind){ const pool = (SCENES[kind]||[]).filter(k=>k!==lastScene); if(!pool.length) return ''; const k = pick(pool); lastScene = k; return k; }
 function sceneImg(k, h=175){ return k && IMG[k] ? `<img src="${IMG[k]}" alt="" class="scene" style="max-height:${h}px">` : ''; }
@@ -1836,14 +2058,14 @@ function moveSplash(img, title){
   return new Promise(res=>setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); }, 250); }, 1250));
 }
 function runMeter(cfg){
-  const {w, pf, speed, label, comeback, time} = cfg;
+  const {w, pf, speed, label, comeback, time, special} = cfg;
   const center = rnd(w/2+.04, 1-w/2-.04);
   const pw = w*pf;
-  stage(`<div class="panel">
+  stage(`<div class="panel${special?' sppanel':''}">
     <div class="row"><b class="grow" style="font-size:17px">${esc(label)}</b>${comeback?'<span class="pill" style="background:var(--red)">🔥 Comeback power</span>':''}</div>
-    <div class="meter" id="meter"><div class="zone" style="left:${(center-w/2)*100}%;width:${w*100}%"></div><div class="perf" style="left:${(center-pw/2)*100}%;width:${pw*100}%"></div><div class="mk" id="mk"></div><div class="tm" id="tm"></div></div>
-    <button class="btn block tapbtn" id="tapBtn">TAP!</button>
-    <div class="hint" style="margin-top:6px">Green = score · Gold = perfect<span class="kbd"> · Space bar works too</span></div></div>`);
+    <div class="meter${special?' spmeter':''}" id="meter"><div class="zone" style="left:${(center-w/2)*100}%;width:${w*100}%"></div><div class="perf" style="left:${(center-pw/2)*100}%;width:${pw*100}%"></div><div class="mk" id="mk"></div><div class="tm" id="tm"></div></div>
+    <button class="btn block tapbtn${special?' gold':''}" id="tapBtn">${special?'NOW!':'TAP!'}</button>
+    <div class="hint" style="margin-top:6px">${special?'Tiny gold zone. One tap. Good luck.':'Green = score · Gold = perfect'}<span class="kbd"> · Space bar works too</span></div></div>`);
   return new Promise(res=>{
     const mk=$id('mk'), tm=$id('tm'), btn=$id('tapBtn'), meter=$id('meter');
     const t0 = performance.now(); let done=false, pos=0;
@@ -1862,7 +2084,8 @@ function runMeter(cfg){
       const dist = Math.abs(pos-center);
       const qq = timeout ? 'miss' : dist<=pw/2 ? 'perfect' : dist<=w/2 ? 'good' : 'miss';
       mk.style.background = qq==='perfect'?'#f5c542':qq==='good'?'#39d17a':'#e5483f';
-      btn.textContent = timeout ? 'Too slow!' : qq==='perfect'?'PERFECT!':qq==='good'?'GOOD!':'MISS';
+      if(special) btn.textContent = timeout ? 'Too slow!' : qq==='miss' ? 'MISSED' : 'LANDED!';
+      else btn.textContent = timeout ? 'Too slow!' : qq==='perfect'?'PERFECT!':qq==='good'?'GOOD!':'MISS';
       setTimeout(()=>res(qq), 450);
     }
     UI.tap = ()=>finish(false);
