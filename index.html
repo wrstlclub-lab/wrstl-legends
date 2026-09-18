@@ -2081,6 +2081,21 @@ function playIntro(){
   if(!INTRO_SRC) return;
   // people who ask their device for less motion get straight to the game
   try{ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+  // Opened in a background tab? Browsers won't load video there, and nobody
+  // wants titles playing at a tab they aren't looking at. Wait until they
+  // actually come and look — but not forever.
+  if(document.hidden){
+    let waited = false;
+    const come = ()=>{
+      if(waited || document.hidden) return;
+      waited = true;
+      document.removeEventListener('visibilitychange', come);
+      playIntro();
+    };
+    document.addEventListener('visibilitychange', come);
+    setTimeout(()=>{ waited = true; document.removeEventListener('visibilitychange', come); }, 120000);
+    return;
+  }
   let v;
   try{ v = document.createElement('video'); if(!v.canPlayType || !v.canPlayType('video/mp4')) return; }
   catch(e){ return; }
