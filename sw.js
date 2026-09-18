@@ -1,7 +1,7 @@
 // WRSTL Legends — service worker.
 // Keeps the whole game on the device so it works with no signal, and quietly
 // picks up new versions in the background.
-const VERSION = 'wrstl-14f3c4d84b';
+const VERSION = 'wrstl-eca4ce336f';
 const CORE = 'core-' + VERSION;
 const FONTS = 'fonts-' + VERSION;
 
@@ -68,14 +68,16 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // everything else on our own site: cache first, then network
+  // everything else on our own site: cache first, then network.
+  // Keyed without the query string so ?utm=… style links don't pile up copies.
   if (url.origin === self.location.origin) {
+    const key = new Request(url.origin + url.pathname, {headers: req.headers});
     e.respondWith((async () => {
-      const hit = await caches.match(req);
+      const hit = await caches.match(key);
       if (hit) return hit;
       try {
         const r = await fetch(req);
-        if (r && r.ok) { const c = await caches.open(CORE); c.put(req, r.clone()); }
+        if (r && r.ok) { const c = await caches.open(CORE); c.put(key, r.clone()); }
         return r;
       } catch (err) {
         return new Response('', {status: 504});

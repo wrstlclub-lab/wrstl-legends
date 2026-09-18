@@ -502,19 +502,19 @@ const R = (name, nick, from, av, blurb)=>({name, nick, from, av:Object.assign({b
 const SK = SKINS;
 
 const GYMS = [
-  {id:'hq', z:0, name:'Phoenix Wrestling Club', city:'Glasgow', lvl:1, icon:'🏠', stage:'Level 1 · Your home club', style:'balanced', boss:'honey', x:200, y:2700,
-   blurb:'Your home club. Honey runs the beginners and never lets anyone give up.',
+  {id:'hq', z:0, name:'Clydeside Club Night', city:'Glasgow', lvl:1, icon:'🌉', stage:'Level 1 · Your home club night', style:'balanced', boss:'honey', x:200, y:2700,
+   blurb:'Your home club night by the river. Honey runs the beginners and never lets anyone give up.',
    members:[
      R('Jamie McBride','The Jumping Jack','Glasgow',{g:'m',skin:SK[0],hair:'spiky',hairCol:'#d0702c',singlet:'#F27121',brow:'calm'},'Loves a flying start.'),
      R('Ailsa Fraser','Ankle Pick','Glasgow',{g:'f',skin:SK[1],hair:'ponytail',hairCol:'#46301f',singlet:'#F27121'},'Low, sneaky and quick.'),
-     Object.assign(R('Salem Naser','Gym Captain','Phoenix WC',{g:'m',skin:SK[4],hair:'curly',hairCol:'#1d1a1a',beard:true,singlet:'#F27121'},'Club captain. The last test before Honey.'),{captain:true}),
+     Object.assign(R('Salem Naser','Gym Captain','Clydeside',{g:'m',skin:SK[4],hair:'curly',hairCol:'#1d1a1a',beard:true,singlet:'#F27121'},'Club captain. The last test before Honey.'),{captain:true}),
    ]},
-  {id:'clyde', z:0, name:'Clydeside Club Night', city:'Glasgow', lvl:2, icon:'🌉', stage:'Level 2 · Club night across the river', style:'heart', boss:'komodo', x:300, y:2460,
-   blurb:"Komodo's Tuesday club night. Tough river-city wrestlers who never stay down.",
+  {id:'clyde', z:0, name:'Paisley Club Night', city:'Paisley', lvl:2, icon:'🧵', stage:'Level 2 · Club night out west', style:'heart', boss:'komodo', x:300, y:2460,
+   blurb:"Komodo's Tuesday night in Paisley. Tough wrestlers who get back up every single time.",
    members:[
-     R('Rory Kerr','The Clydebank Cyclone','Glasgow',{g:'m',skin:SK[0],hair:'short',hairCol:'#e2bf6a',singlet:'#0b3d91'},'Spins, scrambles, never stops.'),
-     R('Kirsty Boyd','Kirsty Quickstep','Glasgow',{g:'f',skin:SK[0],hair:'bun',hairCol:'#d0702c',singlet:'#0b3d91'},'Footwork like a dancer.'),
-     Object.assign(R('Niki Rodgers','Gym Captain','Clydeside',{g:'f',skin:SK[0],hair:'ponytail',hairCol:'#c0442a',singlet:'#0b3d91'},'Captain of Clydeside Grapplers. Beat her to face Komodo.'),{captain:true}),
+     R('Rory Kerr','The Paisley Cyclone','Paisley',{g:'m',skin:SK[0],hair:'short',hairCol:'#e2bf6a',singlet:'#0b3d91'},'Spins, scrambles, never stops.'),
+     R('Kirsty Boyd','Kirsty Quickstep','Paisley',{g:'f',skin:SK[0],hair:'bun',hairCol:'#d0702c',singlet:'#0b3d91'},'Footwork like a dancer.'),
+     Object.assign(R('Niki Rodgers','Gym Captain','Paisley',{g:'f',skin:SK[0],hair:'ponytail',hairCol:'#c0442a',singlet:'#0b3d91'},'Club captain. Beat her to face Komodo.'),{captain:true}),
    ]},
   {id:'south', z:0, name:'Glasgow Open', city:'Glasgow Southside', lvl:4, icon:'🏅', stage:'Level 2 · Your first competition', style:'technique', boss:'pride', x:110, y:2210,
    blurb:'Your first competition day: weigh in, red or blue, shake hands, wrestle. Pride is waiting in the final.',
@@ -523,26 +523,26 @@ const GYMS = [
      R('Priya Sharma','Priya the Puzzle','Glasgow',{g:'f',skin:SK[3],hair:'braids',hairCol:'#1d1a1a',singlet:'#8e44ad'},'Always one move ahead.'),
      Object.assign(R('Connor Porterfield','Gym Captain','Southside',{g:'m',skin:SK[0],hair:'bald',hairCol:'#7a4a26',singlet:'#8e44ad'},'Southside captain. Beat him to reach the final against Pride.'),{captain:true}),
    ]},
-  {id:'stirling', z:1, name:'Scottish Pathway Camp', city:'Stirling', lvl:6, icon:'🏰', stage:'Level 3 · National training camp', style:'technique', boss:'amber', x:260, y:1990,
-   blurb:'A national pathway camp under the castle. Amber the Lynx is watching your every move.',
+  {id:'stirling', z:1, name:'Scottish Pathway Camp', city:'Largs', lvl:6, icon:'🌊', stage:'Level 3 · National training camp', style:'technique', boss:'amber', x:260, y:1990,
+   blurb:'A national pathway camp on the Ayrshire coast. Amber the Lynx is watching your every move.',
    members:[
-     R('Duncan Stewart','Braveheart','Stirling',{g:'m',skin:SK[0],hair:'long',hairCol:'#d0702c',singlet:'#0b3d91',beard:true},'Charges in shouting.'),
-     R('Eilidh MacLeod','The Thistle','Stirling',{g:'f',skin:SK[1],hair:'curly',hairCol:'#7a4a26',singlet:'#0b3d91'},'Prickly to grab hold of.'),
-     Object.assign(R('Alan McKenzie','Gym Captain','Stirling',{g:'m',skin:SK[1],hair:'buzz',hairCol:'#46301f',beard:true,singlet:'#0b3d91'},'Camp captain. Beat him to face Amber.'),{captain:true}),
+     R('Duncan Stewart','The Viking','Largs',{g:'m',skin:SK[0],hair:'long',hairCol:'#d0702c',singlet:'#0b3d91',beard:true},'Charges in shouting.'),
+     R('Eilidh MacLeod','The Thistle','Largs',{g:'f',skin:SK[1],hair:'curly',hairCol:'#7a4a26',singlet:'#0b3d91'},'Prickly to grab hold of.'),
+     Object.assign(R('Alan McKenzie','Gym Captain','Largs',{g:'m',skin:SK[1],hair:'buzz',hairCol:'#46301f',beard:true,singlet:'#0b3d91'},'Camp captain. Beat him to face Amber.'),{captain:true}),
    ]},
-  {id:'aberdeen', z:1, name:'Scottish Championships', city:'Aberdeen', lvl:8, icon:'🥇', stage:'Level 3 · Medal at a National Championship', style:'strength', boss:'grey', x:120, y:1760,
-   blurb:'The Scottish Championships. Grey the Silverback is the strongest and smartest wrestler in the country.',
+  {id:'aberdeen', z:1, name:'Scottish Championships', city:'Edinburgh', lvl:8, icon:'🥇', stage:'Level 3 · Medal at a National Championship', style:'strength', boss:'grey', x:120, y:1760,
+   blurb:'The Scottish Championships, in the capital. Grey the Silverback is the strongest and smartest wrestler in the country.',
    members:[
-     R('Graham Duthie','The Boulder','Aberdeen',{g:'m',skin:SK[1],hair:'buzz',hairCol:'#b9b6b2',singlet:'#555555',stache:true},'Impossible to move.'),
-     R('Mhairi Buchan','The North Sea Storm','Aberdeen',{g:'f',skin:SK[0],hair:'ponytail',hairCol:'#e2bf6a',singlet:'#555555'},'Wave after wave of attacks.'),
-     Object.assign(R('Vasile Jornea','Gym Captain','Aberdeen',{g:'m',skin:SK[1],hair:'bald',hairCol:'#1d1a1a',singlet:'#555555'},'Team captain. Beat him to face Grey in the final.'),{captain:true}),
+     R('Graham Duthie','The Boulder','Edinburgh',{g:'m',skin:SK[1],hair:'buzz',hairCol:'#b9b6b2',singlet:'#555555',stache:true},'Impossible to move.'),
+     R('Mhairi Buchan','The North Sea Storm','Edinburgh',{g:'f',skin:SK[0],hair:'ponytail',hairCol:'#e2bf6a',singlet:'#555555'},'Wave after wave of attacks.'),
+     Object.assign(R('Vasile Jornea','Gym Captain','Edinburgh',{g:'m',skin:SK[1],hair:'bald',hairCol:'#1d1a1a',singlet:'#555555'},'Team captain. Beat him to face Grey in the final.'),{captain:true}),
    ]},
-  {id:'inverness', z:1, name:'Team Scotland Trials', city:'Inverness', lvl:10, icon:'🦌', stage:'Level 4 · Wrestle for Scotland', style:'conditioning', boss:'rally', x:290, y:1520,
-   blurb:'Trials for Team Scotland. Hill runners and caber tossers, and Rally the Hyena never, ever gets tired.',
+  {id:'inverness', z:1, name:'Phoenix Wrestling Club', city:'Stirling', lvl:10, icon:'🏰', stage:'Level 4 · Train with the Phoenix squad', style:'conditioning', boss:'rally', x:290, y:1520,
+   blurb:'The Phoenix Wrestling Club, under the castle — where the whole squad trains. Rally the Hyena never, ever gets tired.',
    members:[
-     R('Ruaridh Munro','The Caber','Inverness',{g:'m',skin:SK[0],hair:'curly',hairCol:'#d0702c',singlet:'#1f9d57',beard:true},'Tall and tireless.'),
-     R('Catriona Ross','The Golden Eagle','Inverness',{g:'f',skin:SK[1],hair:'long',hairCol:'#e2bf6a',singlet:'#1f9d57'},'Swoops in from nowhere.'),
-     Object.assign(R('Ross McFarlane','Gym Captain','Inverness',{g:'m',skin:SK[0],hair:'short',hairCol:'#7a4a26',beard:true,singlet:'#161616',trim:'#F27121'},'Trials captain. Beat him to face Rally.'),{captain:true}),
+     R('Ruaridh Munro','The Caber','Stirling',{g:'m',skin:SK[0],hair:'curly',hairCol:'#d0702c',singlet:'#1f9d57',beard:true},'Tall and tireless.'),
+     R('Catriona Ross','The Golden Eagle','Stirling',{g:'f',skin:SK[1],hair:'long',hairCol:'#e2bf6a',singlet:'#1f9d57'},'Swoops in from nowhere.'),
+     Object.assign(R('Ross McFarlane','Gym Captain','Stirling',{g:'m',skin:SK[0],hair:'short',hairCol:'#7a4a26',beard:true,singlet:'#161616',trim:'#F27121'},'Club captain at the Phoenix. Beat him to face Rally.'),{captain:true}),
    ]},
   {id:'newcastle', z:2, name:'British Championships', city:'Newcastle', lvl:13, icon:'🌁', stage:'Level 4 · Wrestle at the British Championships', style:'strength', boss:'paws', x:130, y:1300,
    blurb:'The British Championships. Paws the Bear guards the bridge and his suplex is famous.',
@@ -1158,7 +1158,7 @@ ACTIONS.avDone = ()=>{
   if(!S.seenMapTip){ S.seenMapTip = true; save();
     modal(`<div style="text-align:center"><img src="${avatar()}" style="height:120px;border-radius:18px" alt=""><h2>Welcome to the squad, ${esc(S.name)}!</h2>
     <div class="coachbox" style="text-align:left;margin-top:10px"><img src="${coachImg()}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><div class="small">"I'm your coach. Every stop on the map has <b>missions</b> and a <b>boss</b> from the WRSTL squad. Do the missions, beat the boss, and I'll stamp your passport."</div></div></div>
-    <p class="small" style="margin-top:10px">You start at the <b>Phoenix Wrestling Club</b> in Glasgow. Beat 3 wrestlers to face the boss. Each stamp unlocks the next stop on the pathway.</p>
+    <p class="small" style="margin-top:10px">You start at <b>${esc(GYMS[0].name)}</b> in ${esc(GYMS[0].city)}. Beat 3 wrestlers to face the boss. Each stamp unlocks the next stop on the pathway.</p>
     <button class="btn block" data-act="openGymHQ">Let's go to the club</button></div>`);
   }
 };
@@ -1422,7 +1422,7 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
       ${PACK.map(m=>{ const p=Math.min(m.n,S.pack[m.k]||0), done=p>=m.n; return `<div class="mis ${done?'done':''}" style="background:rgba(255,255,255,.45);color:#2a1c10"><span class="mi">${done?'✅':m.i}</span><div class="grow"><b>${esc(m.t)}</b>${m.n>1?`<div class="small">${p} / ${m.n}</div>`:''}</div></div>`; }).join('')}</div>
     <div style="margin-top:18px"><h3>My competition record</h3>
       ${S.record.length?`<table class="rec">${S.record.map(r=>`<tr><td>${esc(r.d)}</td><td>${esc(r.v)}${r.boss?' 👑':''}</td><td>${esc(r.s)}</td><td style="color:${r.w?'#1f7a3a':'#b03030'};font-weight:900">${r.w?'WIN':'LOSS'}</td></tr>`).join('')}</table>`:'<p class="small">Your last 12 bouts will appear here. Win or learn — write it down!</p>'}
-      <div class="small" style="margin-top:6px">Total: <b>${S.wins}</b> wins from <b>${S.bouts}</b> bouts · best streak counts on the Team Scotland and Team GB missions</div></div>
+      <div class="small" style="margin-top:6px">Total: <b>${S.wins}</b> wins from <b>${S.bouts}</b> bouts · best streak counts on the club and Team GB missions</div></div>
   </div></div>${nav()}`;
 
 // ---------- more ----------
@@ -1561,7 +1561,7 @@ function energyEmpty(cost){
   const secs = 60-Math.floor((Date.now()-S.energyAt)/1000)%60;
   modal(`<div style="text-align:center"><div style="font-size:54px">😮‍💨</div><h2>Out of energy</h2>
     <p>You need ⚡${cost}. Energy refills by 1 every minute (next in ${secs}s). Levelling up refills it all!</p>
-    <p class="small muted">Tip: grab a sports drink from the club shop at the Phoenix Wrestling Club.</p>
+    <p class="small muted">Tip: grab a sports drink from the club shop at ${esc(GYMS[0].name)}.</p>
     <button class="btn block" data-act="close">OK</button></div>`);
 }
 
