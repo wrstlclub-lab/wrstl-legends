@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="description" content="Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="description" content="Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games."><link rel="manifest" href="manifest.webmanifest"><link rel="preload" as="video" href="intro.mp4"><link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
 <title>WRSTL Legends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Nunito:wght@400;700;800;900&display=swap">
@@ -304,6 +304,22 @@ a.btn{text-decoration:none}
 
 /* match scene pictures */
 img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:contain;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.5);animation:pop .35s cubic-bezier(.3,1.5,.5,1)}
+
+/* opening titles */
+.introwrap{position:fixed;inset:0;z-index:9000;background:#07060a;display:flex;align-items:center;justify-content:center;
+  opacity:1;transition:opacity .4s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.introwrap.out{opacity:0;pointer-events:none}
+/* contain, not cover: the titles are framed right to the edges and cropping eats them */
+.introvid{width:100%;height:100%;object-fit:contain;background:#07060a;opacity:0;transition:opacity .25s ease}
+.introwrap.on .introvid{opacity:1}
+.introskip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;z-index:2;
+  font:700 13px/1 'Nunito',system-ui,sans-serif;letter-spacing:.04em;color:#fff;background:rgba(0,0,0,.42);
+  border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 15px;cursor:pointer;backdrop-filter:blur(4px)}
+.introsound{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);left:50%;transform:translateX(-50%);z-index:2;
+  font:700 13px/1 'Nunito',system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.42);
+  border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 16px;cursor:pointer;backdrop-filter:blur(4px)}
+.introskip:active,.introsound:active{transform:scale(.96)}
+.introsound:active{transform:translateX(-50%) scale(.96)}
 
 </style>
 </head><body><div id="app"></div>
@@ -2038,6 +2054,86 @@ ACTIONS.drillGo = async d=>{
 
 // ---------- boot ----------
 render();
+
+// ---------- opening titles ----------
+// Plays every time the game is opened, in the browser or as the installed app.
+// Rules it must never break: it can be skipped at any moment, and if anything at
+// all goes wrong (no video support, slow network, codec refused, autoplay
+// blocked) it gets out of the way instantly and the player lands on the title
+// screen. The game has already rendered underneath it before this runs.
+const INTRO_SRC = './intro.mp4';
+
+function playIntro(){
+  if(!INTRO_SRC) return;
+  // people who ask their device for less motion get straight to the game
+  try{ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+  let v;
+  try{ v = document.createElement('video'); if(!v.canPlayType || !v.canPlayType('video/mp4')) return; }
+  catch(e){ return; }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'introwrap';
+  wrap.innerHTML = `
+    <video class="introvid" playsinline webkit-playsinline preload="auto" disablepictureinpicture
+           x5-playsinline aria-label="WRSTL Legends opening titles"></video>
+    <button class="introskip" type="button">Skip ›</button>
+    <button class="introsound" type="button" hidden>🔇 Tap for sound</button>`;
+  document.body.appendChild(wrap);
+
+  const vid  = wrap.querySelector('.introvid');
+  const skip = wrap.querySelector('.introskip');
+  const snd  = wrap.querySelector('.introsound');
+  let gone = false, guard = 0;
+
+  function end(){
+    if(gone) return; gone = true;
+    clearTimeout(guard);
+    try{ vid.pause(); vid.removeAttribute('src'); vid.load(); }catch(e){}
+    wrap.classList.add('out');
+    setTimeout(()=>{ wrap.remove(); }, 420);
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e){ if(e.key==='Escape' || e.key===' ' || e.key==='Enter') end(); }
+
+  skip.addEventListener('click', e=>{ e.stopPropagation(); end(); });
+  wrap.addEventListener('click', end);
+  document.addEventListener('keydown', onKey);
+  vid.addEventListener('ended', end);
+  vid.addEventListener('error', end);
+
+  // the safety net: if it hasn't started playing shortly, don't make anyone wait
+  guard = setTimeout(end, 4000);
+  vid.addEventListener('playing', ()=>{
+    clearTimeout(guard);
+    wrap.classList.add('on');
+    // and a backstop in case 'ended' never fires on some device
+    guard = setTimeout(end, 12000);
+  }, {once:true});
+
+  // Browsers block sound until the player has interacted with the page, so try
+  // with sound, and if we're refused, fall back to a silent play and offer a tap.
+  vid.muted = !S.sound;
+  vid.volume = 1;
+  vid.src = INTRO_SRC;
+  const go = vid.play();
+  if(go && go.catch){
+    go.catch(()=>{
+      if(gone) return;
+      vid.muted = true;
+      if(S.sound) snd.hidden = false;
+      const retry = vid.play();
+      if(retry && retry.catch) retry.catch(end);
+    });
+  }
+
+  snd.addEventListener('click', e=>{
+    e.stopPropagation();
+    vid.muted = false; snd.hidden = true;
+    try{ ac(); }catch(err){}          // the same tap wakes the game's own audio
+  });
+}
+
+playIntro();
 
 </script>
 </body></html>

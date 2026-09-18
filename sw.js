@@ -1,7 +1,7 @@
 // WRSTL Legends — service worker.
 // Keeps the whole game on the device so it works with no signal, and quietly
 // picks up new versions in the background.
-const VERSION = 'wrstl-eca4ce336f';
+const VERSION = 'wrstl-2e42d4f319';
 const CORE = 'core-' + VERSION;
 const FONTS = 'fonts-' + VERSION;
 
@@ -9,6 +9,7 @@ const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './intro.mp4',
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
@@ -72,12 +73,37 @@ self.addEventListener('fetch', e => {
   // Keyed without the query string so ?utm=… style links don't pile up copies.
   if (url.origin === self.location.origin) {
     const key = new Request(url.origin + url.pathname, {headers: req.headers});
+    const range = req.headers.get('range');
     e.respondWith((async () => {
       const hit = await caches.match(key);
+      // Video players ask for byte ranges. Safari in particular insists on a 206,
+      // so serve the slice ourselves rather than handing back the whole file.
+      if (hit && range) {
+        const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+        if (m) {
+          const buf = await hit.arrayBuffer();
+          const total = buf.byteLength;
+          let start = m[1] === '' ? total - Number(m[2]) : Number(m[1]);
+          let end = (m[1] === '' || m[2] === '') ? total - 1 : Number(m[2]);
+          start = Math.max(0, Math.min(start, total - 1));
+          end = Math.max(start, Math.min(end, total - 1));
+          return new Response(buf.slice(start, end + 1), {
+            status: 206,
+            statusText: 'Partial Content',
+            headers: {
+              'Content-Type': hit.headers.get('Content-Type') || 'application/octet-stream',
+              'Content-Length': String(end - start + 1),
+              'Content-Range': `bytes ${start}-${end}/${total}`,
+              'Accept-Ranges': 'bytes',
+            },
+          });
+        }
+      }
       if (hit) return hit;
       try {
         const r = await fetch(req);
-        if (r && r.ok) { const c = await caches.open(CORE); c.put(key, r.clone()); }
+        // only a whole file is worth storing — never a 206 slice under the full key
+        if (r && r.status === 200) { const c = await caches.open(CORE); c.put(key, r.clone()); }
         return r;
       } catch (err) {
         return new Response('', {status: 504});
