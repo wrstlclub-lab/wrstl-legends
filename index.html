@@ -350,6 +350,22 @@ img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:co
 .spmeter{border-color:var(--gold);box-shadow:0 0 14px rgba(245,197,66,.3)}
 .spmeter .zone{background:rgba(245,197,66,.45);border-left-color:var(--gold);border-right-color:var(--gold)}
 
+/* the pathway: six levels, signed off by the coach */
+.pathcard{margin-top:14px;padding:12px;border-radius:14px;background:rgba(255,255,255,.5);border:2px dashed #b08a4a;color:#2a1c10}
+.pathcard h3{font-size:15px;letter-spacing:.5px}
+.pathnow{font-family:var(--display);font-size:12px;letter-spacing:1px;background:#7a3310;color:#fff;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pathstrip{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:10px}
+.pathpip{border-radius:10px;padding:6px 2px;text-align:center;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.12);opacity:.45}
+.pathpip img{width:100%;max-width:34px;height:30px;object-fit:contain;display:block;margin:0 auto;filter:grayscale(1)}
+.pathpip b{display:block;font-family:var(--display);font-size:14px;line-height:1.1}
+.pathpip span{display:block;font-size:8.5px;font-weight:800;line-height:1.1;word-break:break-word}
+.pathpip.got{opacity:1;background:rgba(245,197,66,.4);border-color:#b08a4a}
+.pathpip.got img{filter:none}
+.pathask{margin-top:10px;padding:10px;border-radius:12px;background:rgba(245,197,66,.3);border:1px solid #b08a4a}
+.pathask p{margin:0 0 8px}
+.pathrow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pathrow img{height:52px;width:52px;object-fit:contain;flex:0 0 auto}
+
 </style>
 </head><body><div id="app"></div>
 <script>
@@ -695,6 +711,22 @@ const PACK = [
   {k:'partners', n:1, t:'Train with three different partners: beat all 3 wrestlers at one gym', i:'👥'},
   {k:'handshakes', n:15, t:'Shake hands before and after 15 bouts', i:'🫱'},
 ];
+// ---- The Pathway: six levels, exactly as in the paper passport ----
+// The real passport runs Honey → Komodo & Pride → Grey → Paws → Hocopir → Phoenix,
+// and every page says the same thing: finish a mission, then GET YOUR STAMP FROM
+// YOUR COACH. So in the game the wrestler still levels up from XP on their own,
+// but the Pathway Level only moves when Coach Phoenix reviews you and signs it
+// off. Pride's Pack (Amber, Rally, Sable) and Tusk the referee are companions
+// along the way, not levels — same as the paper version.
+const PATHWAY = [
+  {n:1, who:'Honey the Badger',      boss:'honey',   at:'hq'},
+  {n:2, who:'Komodo & Pride',        boss:'pride',   at:'south'},
+  {n:3, who:'Grey the Silverback',   boss:'grey',    at:'aberdeen'},
+  {n:4, who:'Paws the Bear',         boss:'paws',    at:'newcastle'},
+  {n:5, who:'Hocopir the Rhino',     boss:'hocopir', at:'london'},
+  {n:6, who:'Phoenix, Guardian of the Mat', boss:'phoenix', at:'olympics'},
+];
+
 // ---- Special moves ----
 // Earned once at the Phoenix Wrestling Club. The player picks ONE and carries six
 // uses of it for the rest of the career — they never come back. Each costs 5
@@ -771,7 +803,7 @@ function freshSave(){
     gymWins:{}, stamps:{}, cards:{}, equip:[], kit:{owned:{clubSinglet:1}, eq:{singlet:'clubSinglet'}},
     loc:'hq', phoenix:false, rises:0, sound:true, bouts:0, wins:0, tut:false, seenMapTip:false,
     mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0,
-    sp:'', spUses:0};
+    sp:'', spUses:0, path:0, drills:{}, pathDrills:{}};
 }
 function loadSave(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===2) return Object.assign(freshSave(), s); }catch(e){}
@@ -788,6 +820,7 @@ function startCareer(styleId){
   S.gymWins = {}; S.stamps = {}; S.loc = 'hq'; S.coins = Math.max(S.coins||0, 0);
   S.mis = {}; S.bossBeat = {}; S.quiz = {}; S.tees = {}; S.record = []; S.streak = 0; S.lastLoss = false; S.seenUnlock = {};
   S.sp = ''; S.spUses = 0;   // the special move is earned again on the way up
+  S.path = 0; S.drills = {}; S.pathDrills = {};   // and so is the pathway, level 1 to 6
   if(!S.cards[c.move]) S.cards[c.move] = 1;
   S.equip = [c.move];
   S.energy = maxEnergy(); S.energyAt = Date.now();
@@ -1113,6 +1146,86 @@ function lateRamp(gid){
   return clamp((i - LATE_FROM + 1) / (GYMS.length - LATE_FROM), 0, 1);
 }
 
+// ---- The Pathway: Coach Phoenix signs you off, you don't level yourself ----
+// The stamp is always yours once the missions and the boss are done — the pathway
+// level is the thing that waits. Nothing here ever blocks the map.
+const pathAt = gid => PATHWAY.find(p=>p.at===gid) || null;
+const pathNow = ()=>PATHWAY.find(p=>p.n===S.path) || null;
+const pathNext = ()=>PATHWAY.find(p=>p.n===(S.path||0)+1) || null;
+
+// the stat the coach will pick on: lowest, ties broken by the lowest raw number
+function weakestStat(){
+  let best = STATS[0].k, bv = Infinity;
+  for(const s of STATS){ const v = statOf(s.k); if(v < bv){ bv = v; best = s.k; } }
+  return best;
+}
+// has this stat had a training session since the last sign-off?
+function trainedSince(k){ return (S.drills[k]||0) > (S.pathDrills[k]||0); }
+// is a sign-off owed, and can it be granted right now?
+function pathOwed(gid){
+  const p = pathAt(gid);
+  return !!(p && S.stamps[gid] && S.path < p.n);
+}
+function pathOwedAnywhere(){ return PATHWAY.find(p=>S.stamps[p.at] && S.path < p.n) || null; }
+function pathPasses(){
+  if(S.path === 0) return true;             // level 1 is the introduction, not a test
+  return trainedSince(weakestStat());
+}
+function grantPath(p){
+  S.path = p.n;
+  S.pathDrills = Object.assign({}, S.drills);   // the clock resets for the next one
+  S.pts += 2;
+  save(); ping('path');
+}
+
+async function pathReview(gid){
+  const p = pathAt(gid) || pathOwedAnywhere();
+  if(!p || S.path >= p.n || !S.stamps[p.at]) return false;
+  const bd = BOSSES[p.boss], first = bd.name.split(' ')[0];
+
+  if(S.path === 0){            // the first one: explain the rule rather than test it
+    grantPath(p);
+    SFX.perfect(); SFX.cheer();
+    await coachWait(`Pathway Level 1 signed off`,
+      `<div class="pathrow"><img src="${IMG[bd.img]}" alt=""><div><b>${esc(p.who)}</b><div class="small muted">Level 1 of 6</div></div></div>
+       <p>That's your first stamp — so you are now <b>Pathway Level 1</b>.</p>
+       <p class="small">Here's the thing to remember: <b>you don't move up the pathway on your own.</b> Doing the missions earns the stamp. Moving up a level is something <b>I</b> sign off, after I've looked at how you're training. That's exactly how it works in the real club.</p>
+       <p class="small muted">Six levels, same as your paper passport. Next one is ${esc(PATHWAY[1].who)}.</p>`, 'Understood, Coach');
+    return true;
+  }
+
+  const k = weakestStat(), st = STATS.find(s=>s.k===k);
+  if(!pathPasses()){
+    SFX.bad();
+    await coachWait(`Not yet — Pathway Level ${p.n}`,
+      `<div class="pathrow"><img src="${IMG[bd.img]}" alt=""><div><b>${esc(p.who)}</b><div class="small muted">Level ${p.n} of 6</div></div></div>
+       <p>Great stamp. But I'm not signing you up to Level ${p.n} today.</p>
+       <p>I've looked at your stats and your <b>${st.i} ${esc(st.n)}</b> is the one you've been avoiding. Go and do a <b>${esc(st.n)} session</b> at any club, then come and find me.</p>
+       <p class="small muted">Your stamp is safe and the map is still open — it's only the pathway level that waits. Tap <b>Ask Coach Phoenix</b> on your passport when you've done it.</p>`, 'Fair enough, Coach');
+    return false;
+  }
+
+  grantPath(p);
+  SFX.level(); SFX.cheer();
+  const done = PATHWAY.filter(x=>x.n<=S.path).length;
+  await coachWait(`Pathway Level ${p.n} signed off!`,
+    `<div class="pathrow"><img src="${IMG[bd.img]}" alt=""><div><b>${esc(p.who)}</b><div class="small muted">Level ${p.n} of 6</div></div></div>
+     <p>I've watched how you train, not just how you win. You've put the work into your weak side. <b>Signed off — Pathway Level ${p.n}.</b></p>
+     <p class="motto">"${esc(bd.lesson||bd.motto)}"</p>
+     <div class="row" style="justify-content:center;gap:8px;margin:10px 0"><span class="pill" style="font-size:15px">🎖️ Level ${p.n} of 6</span><span class="pill" style="font-size:15px">+2 stat points</span></div>
+     ${done<6?`<p class="small muted">Next: ${esc(pathNext().who)} at ${esc(GYMS[gymIdx(pathNext().at)].name)}.</p>`:'<p class="small" style="color:var(--gold)">That is all six. You have completed the pathway.</p>'}`,
+    'Thanks, Coach');
+  return true;
+}
+
+// the retry, from the passport screen
+ACTIONS.askSignoff = async ()=>{
+  const p = pathOwedAnywhere(); if(!p) return;
+  closeModal();
+  await pathReview(p.at);
+  render();
+};
+
 // ---- the special move: chosen once, six uses, no refills ----
 const spDef = ()=>SPECIALS[S.sp] || null;
 const spLeft = ()=>S.sp ? (S.spUses||0) : 0;
@@ -1179,6 +1292,7 @@ async function checkStamp(gid){
   save(); ping('stamp');
   await stampModal(g);
   for(const u of UNLOCKS){ if(u.after===gid && !S.seenUnlock[u.k]){ S.seenUnlock[u.k]=1; save(); await coachWait(`${u.i} New skill: ${u.by}'s lesson`, `<p>${esc(u.t)}</p>`, 'Got it'); } }
+  if(pathAt(gid)) await pathReview(gid);
   await offerSpecial();
   if(gid==='olympics') await phoenixModal();
   return true;
@@ -1520,7 +1634,8 @@ RENDER.wrestler = ()=>{
       <div class="small muted">${esc(c.style.perk)}</div>
       <button class="btn ghost" data-act="editLook" style="margin-top:8px;padding:7px 14px;font-size:14px">✏️ Edit look</button>
       <div class="row" style="justify-content:center;gap:6px;margin-top:8px;flex-wrap:wrap">
-        <span class="pill">🏆 ${S.wins} wins</span><span class="pill">🤼 ${S.bouts} bouts</span><span class="pill">⭐ ${Object.keys(S.stamps).length} stamps</span></div>
+        <span class="pill">🏆 ${S.wins} wins</span><span class="pill">🤼 ${S.bouts} bouts</span><span class="pill">⭐ ${Object.keys(S.stamps).length} stamps</span>
+        ${S.path?`<span class="pill" style="background:var(--gold);color:#111">🎖️ Pathway ${S.path}/6</span>`:''}</div>
     </div>
     <div class="card" style="margin-top:12px">
       <div class="row"><h3 class="grow">Stats</h3>${S.pts>0?`<span class="pill" style="background:var(--orange);color:#111">${S.pts} point${S.pts>1?'s':''} to spend</span>`:''}</div>
@@ -1571,6 +1686,7 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
     <div class="row"><img src="${avatar()}" style="width:64px;height:70px;border-radius:12px;background:#e6d3b0" alt=""><div class="grow">
       <div class="small" style="letter-spacing:2px;font-weight:900;color:#7a3310">MY PATHWAY PASSPORT</div>
       <h2 style="color:#2a1c10">${esc(S.name)}</h2><div class="small">Level ${S.lvl} · ${Object.keys(S.stamps).length}/${GYMS.length} stamps${S.phoenix?' · 🔥 WRSTL Legend':''}</div></div></div>
+    ${pathwayCard()}
     ${ZONES.map((z,zi)=>`<div style="margin-top:18px"><h3>${z.sub}</h3><div class="stamps">${GYMS.filter(g=>g.z===zi).map(g=>{ const d=S.stamps[g.id]; const done=misDef(g.id).filter(m=>misDone(g.id,m)).length+(S.bossBeat[g.id]?1:0), tot=misDef(g.id).length+1;
       return d ? `<div class="stamp got"><div><img src="${IMG[BOSSES[g.boss].img]}" style="height:46px" alt=""><div>${esc(g.name)}</div><div style="font-size:10px">${esc(d)}</div></div></div>`
                : `<div class="stamp"><div><div class="e" style="opacity:.4">${g.icon}</div><div>${esc(g.name)}</div><div style="font-size:10px">${done?`Missions ${done}/${tot}`:'Level '+g.lvl}</div></div></div>`;}).join('')}</div></div>`).join('')}
@@ -1582,6 +1698,28 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
       ${S.record.length?`<table class="rec">${S.record.map(r=>`<tr><td>${esc(r.d)}</td><td>${esc(r.v)}${r.boss?' 👑':''}</td><td>${esc(r.s)}</td><td style="color:${r.w?'#1f7a3a':'#b03030'};font-weight:900">${r.w?'WIN':'LOSS'}</td></tr>`).join('')}</table>`:'<p class="small">Your last 12 bouts will appear here. Win or learn — write it down!</p>'}
       <div class="small" style="margin-top:6px">Total: <b>${S.wins}</b> wins from <b>${S.bouts}</b> bouts · best streak counts on the club and Team GB missions</div></div>
   </div></div>${nav()}`;
+
+// The pathway strip: six levels, signed off by the coach — the same six as the
+// paper passport, so a child sees the two lining up.
+function pathwayCard(){
+  const owed = pathOwedAnywhere();
+  const weak = STATS.find(s=>s.k===weakestStat());
+  return `<div class="pathcard">
+    <div class="row"><h3 class="grow" style="color:#2a1c10">My pathway level</h3>
+      <span class="pathnow">${S.path?`LEVEL ${S.path} OF 6`:'NOT SIGNED OFF YET'}</span></div>
+    <div class="pathstrip">${PATHWAY.map(p=>{
+      const got = S.path>=p.n, bd = BOSSES[p.boss];
+      return `<div class="pathpip ${got?'got':''}" title="${esc(p.who)}">
+        <img src="${IMG[bd.img]}" alt="">
+        <b>${p.n}</b><span>${esc(bd.name.split(' ')[0])}</span></div>`;}).join('')}</div>
+    ${owed
+      ? `<div class="pathask"><p class="small"><b>Coach Phoenix hasn't signed you up to Level ${owed.n} yet.</b> He wants to see a <b>${weak.i} ${esc(weak.n)}</b> session first — do one at any club, then ask him.</p>
+         <button class="btn gold block" data-act="askSignoff">🐦‍🔥 Ask Coach Phoenix to sign me off</button></div>`
+      : `<p class="small" style="margin:8px 0 0">${S.path>=6
+          ? 'All six levels signed off. Every one of them earned at training, not just won on the mat.'
+          : 'Stamps you earn yourself. Moving up a pathway level is signed off by your coach — just like your real passport.'}</p>`}
+  </div>`;
+}
 
 // ---------- more ----------
 RENDER.more = ()=>`${hud()}<div class="screen">
@@ -2274,6 +2412,7 @@ ACTIONS.drillGo = async d=>{
   }
   gain = Math.min(gain, 1-(S.trained[k]||0));
   S.trained[k] = (S.trained[k]||0)+gain; S.stats[k] += gain; mission('drills', 1, g.id);
+  S.drills[k] = (S.drills[k]||0)+1;   // Coach Phoenix looks at this at sign-off time
   const ups = addXP(xp); save();
   modal(`<div style="text-align:center"><div style="font-size:50px">${s.i}</div><h2>Session done!</h2><p><b>+${gain} ${s.n}</b> · ✨ +${xp} XP</p><button class="btn block" data-act="drillDone">Back to the gym</button></div>`);
   await new Promise(res=>{ ACTIONS.drillDone = ()=>{ closeModal(); res(); }; });
