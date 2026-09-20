@@ -1,7 +1,7 @@
 // WRSTL Legends — service worker.
 // Keeps the whole game on the device so it works with no signal, and quietly
 // picks up new versions in the background.
-const VERSION = 'wrstl-8d76a148fd';
+const VERSION = 'wrstl-f15cc86575';
 const CORE = 'core-' + VERSION;
 const FONTS = 'fonts-' + VERSION;
 

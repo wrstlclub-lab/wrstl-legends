@@ -322,11 +322,19 @@ img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:co
 .introskip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;z-index:2;
   font:700 13px/1 'Nunito',system-ui,sans-serif;letter-spacing:.04em;color:#fff;background:rgba(0,0,0,.42);
   border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 15px;cursor:pointer;backdrop-filter:blur(4px)}
+/* only ever seen when the browser has refused us sound, so it has to be noticed
+   at a glance — a tap anywhere on the film works too, but this says so */
 .introsound{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);left:50%;transform:translateX(-50%);z-index:2;
-  font:700 13px/1 'Nunito',system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.42);
-  border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 16px;cursor:pointer;backdrop-filter:blur(4px)}
-.introskip:active,.introsound:active{transform:scale(.96)}
-.introsound:active{transform:translateX(-50%) scale(.96)}
+  font:800 14px/1 'Nunito',system-ui,sans-serif;color:#0d0a12;background:var(--gold);
+  border:0;border-radius:999px;padding:12px 20px;cursor:pointer;
+  animation:introSndPulse 1.8s ease-in-out infinite}
+/* the halo breathes, the button does not move — a target that slides around is
+   a nuisance to tap, and children are doing this one-handed */
+@keyframes introSndPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,197,66,.55), 0 6px 18px rgba(0,0,0,.45)}
+  70%{box-shadow:0 0 0 14px rgba(245,197,66,0), 0 6px 18px rgba(0,0,0,.45)}}
+@media (prefers-reduced-motion: reduce){.introsound{animation:none}}
+.introskip:active{transform:scale(.96)}
+.introsound:active{transform:translateX(-50%) scale(.96);animation:none}
 
 /* special move — earned at the Phoenix Wrestling Club, six uses, no refills */
 .spbar{width:100%;margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:1px;
@@ -2472,7 +2480,7 @@ function playIntro(){
     <video class="introvid" playsinline webkit-playsinline preload="auto" disablepictureinpicture
            x5-playsinline aria-label="WRSTL Legends opening titles"></video>
     <button class="introskip" type="button">Skip ›</button>
-    <button class="introsound" type="button" hidden>🔇 Tap for sound</button>`;
+    <button class="introsound" type="button" hidden>🔊 Tap anywhere for sound</button>`;
   document.body.appendChild(wrap);
 
   const vid  = wrap.querySelector('.introvid');
@@ -2489,10 +2497,17 @@ function playIntro(){
     setTimeout(()=>{ wrap.remove(); }, 420);
     document.removeEventListener('keydown', onKey);
   }
-  function onKey(e){ if(e.key==='Escape' || e.key===' ' || e.key==='Enter') end('key'); }
+  function onKey(e){
+    if(e.key!=='Escape' && e.key!==' ' && e.key!=='Enter') return;
+    if(e.key!=='Escape' && wantSound && vid.muted){ withSound(); return; }
+    end('key');
+  }
 
   skip.addEventListener('click', e=>{ e.stopPropagation(); end('skip'); });
-  wrap.addEventListener('click', ()=>end('tap'));
+  // A tap on the film itself is worth more as permission than as a skip: if the
+  // browser has refused us sound, the player's very first touch turns it on and
+  // the titles keep running. Skip › is right there for anyone who meant to leave.
+  wrap.addEventListener('click', ()=>{ if(wantSound && vid.muted){ withSound(); return; } end('tap'); });
   document.addEventListener('keydown', onKey);
   vid.addEventListener('ended', ()=>end('ended'));
   vid.addEventListener('error', ()=>end('error'));
@@ -2512,41 +2527,53 @@ function playIntro(){
     started = true;
     clearTimeout(guard); clearTimeout(hardStop);
     wrap.classList.add('on');
+    if(!vid.muted) snd.hidden = true;  // we got our sound; no need to ask for it
+    try{ ac(); }catch(e){}             // wake the game's own audio while we may
     // a backstop in case 'ended' never fires on some device
     hardStop = setTimeout(()=>end('backstop'), 12000);
   }, {once:true});
 
-  // Browsers block sound until the player has interacted with the page, so try
-  // with sound, and if we're refused, fall back to a silent play and offer a tap.
+  // The intro wants to open with its sound on. Whether it may is the browser's
+  // call, not ours: sound without a gesture is allowed in the installed app and
+  // on a device the player uses the game on often, and refused on a cold first
+  // visit. So we always ask for sound first, and only accept silence when we are
+  // actually told no.
+  const wantSound = !!S.sound;
   vid.volume = 1;
   vid.src = INTRO_SRC;
 
-  let quiet = 0;
+  function withSound(){
+    if(gone || !wantSound || !vid.muted) return;
+    vid.muted = false;
+    snd.hidden = true;
+    try{ ac(); }catch(e){}            // the same gesture wakes the game's audio
+    if(vid.paused) { const p = vid.play(); if(p && p.catch) p.catch(()=>{}); }
+  }
+
+  let tries = 0;
   function attempt(silent){
     if(gone) return;
     vid.muted = silent;
     const pr = vid.play();
     if(!pr || !pr.catch) return;
-    pr.catch(()=>{
+    pr.catch(err=>{
       if(gone) return;
-      if(!silent){                       // refused because of the sound — go quiet
-        if(S.sound) snd.hidden = false;
+      // NotAllowedError is the only refusal that is really about sound. Anything
+      // else — nearly always AbortError, meaning the file simply wasn't ready
+      // when we asked — used to drop us to silent for the whole intro even on
+      // devices perfectly willing to play it out loud. Now we wait and ask again
+      // at the same volume.
+      if(!silent && err && err.name === 'NotAllowedError'){
+        if(wantSound) snd.hidden = false;
         attempt(true);
         return;
       }
-      // A silent play was refused too. Nearly always that just means the file
-      // hasn't arrived yet and the earlier play() was cut short, so wait for
-      // something to play rather than giving up on the titles.
-      if(quiet++ < 2) vid.addEventListener('canplay', ()=>{ if(!gone && vid.paused) attempt(true); }, {once:true});
+      if(tries++ < 3) vid.addEventListener('canplay', ()=>{ if(!gone && vid.paused) attempt(silent); }, {once:true});
     });
   }
-  attempt(!S.sound);
+  attempt(!wantSound);
 
-  snd.addEventListener('click', e=>{
-    e.stopPropagation();
-    vid.muted = false; snd.hidden = true;
-    try{ ac(); }catch(err){}          // the same tap wakes the game's own audio
-  });
+  snd.addEventListener('click', e=>{ e.stopPropagation(); withSound(); });
 }
 
 playIntro();
