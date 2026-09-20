@@ -983,9 +983,12 @@ function crowdSwell(size=.5, dur=1.2){
 const SFX = {
   tap:()=>tone(660,.06,'square',.05),
   // referee
-  whistle:()=>whistleBlow({dur:.4}),
-  whistleStart:()=>{ whistleBlow({dur:.16, vol:.15}); whistleBlow({dur:.16, vol:.15, when:.2}); whistleBlow({dur:.5, vol:.17, when:.4}); },
-  whistleEnd:()=>{ whistleBlow({dur:.7, vol:.18}); },
+  // The referee's whistle means one thing only: the match has started, or it has
+  // finished. One sharp burst each. It is deliberately not used anywhere else —
+  // a whistle that fires on menus and mid-bout calls stops meaning anything.
+  whistle:()=>whistleBlow({dur:.22, vol:.17}),
+  whistleStart:()=>whistleBlow({dur:.22, vol:.17}),
+  whistleEnd:()=>whistleBlow({dur:.22, vol:.18}),
   // contact
   slap:()=>{ noiseBurst({d:.09, vol:.16, freq:2600, q:1.2, sweep:-1400, curve:3}); tone(190,.07,'triangle',.08,0,-70); },
   thud:()=>{ tone(95,.24,'sine',.26,0,-45); noiseBurst({d:.16, vol:.10, type:'lowpass', freq:700, q:.5, curve:3}); },
@@ -1368,7 +1371,7 @@ RENDER.title = ()=>`<div class="title">
            : `<button class="btn" data-act="toSelect" style="min-width:230px">Create your wrestler</button>`}
   <p class="small muted" style="margin-top:8px">Progress saves on this device.</p>
 </div>`;
-ACTIONS.continue = ()=>{ SFX.whistle(); go('map'); };
+ACTIONS.continue = ()=>{ SFX.good(); go('map'); };
 function brand(extra=''){ return `<div class="brand ${extra}"><img src="${IMG.logo_h}" alt="WRSTL"></div>`; }
 function siteButton(){ return WRSTL_URL ? `<a class="btn block" href="${esc(WRSTL_URL)}" target="_blank" rel="noopener">🌐 Visit the WRSTL website</a>` : `<button class="btn block" disabled title="Coming soon">🌐 WRSTL website · coming soon</button>`; }
 function newDraft(){ return {name:'', g:pick(['m','f']), skin:pick(SKINS), hair:pick(['short','spiky','curly','ponytail','bun','afro']), hairCol:pick(HAIR_COLS.slice(0,6)).c, singlet:'#F27121', style:'speed'}; }
@@ -1414,7 +1417,7 @@ ACTIONS.avDone = ()=>{
   if(!nm){ toast('Give your wrestler a name first!'); const n=document.getElementById('nameIn'); if(n) n.focus(); return; }
   S.name = nm; S.av = {g:d.g, skin:d.skin, hair:d.hair, hairCol:d.hairCol, singlet:d.singlet, brow:'calm'};
   if(UI.editing){ save(); SFX.good(); go('wrestler'); return; }
-  startCareer(d.style); SFX.whistle(); go('map');
+  startCareer(d.style); SFX.good(); go('map');
   if(!S.seenMapTip){ S.seenMapTip = true; save();
     modal(`<div style="text-align:center"><img src="${avatar()}" style="height:120px;border-radius:18px" alt=""><h2>Welcome to the squad, ${esc(S.name)}!</h2>
     <div class="coachbox" style="text-align:left;margin-top:10px"><img src="${coachImg()}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><div class="small">"I'm your coach. Every stop on the map has <b>missions</b> and a <b>boss</b> from the WRSTL squad. Do the missions, beat the boss, and I'll stamp your passport."</div></div></div>
@@ -1557,7 +1560,7 @@ ACTIONS.node = async d=>{
       if(k<1) requestAnimationFrame(step); else res(); }
     requestAnimationFrame(step);
   });
-  S.loc = g.id; save(); travelling = false; SFX.whistle();
+  S.loc = g.id; save(); travelling = false; SFX.good();
   go('gym', {gym:g.id});
 };
 
@@ -1810,7 +1813,7 @@ ACTIONS.installApp = async ()=>{
     <p class="small muted" style="margin-top:8px">It has to be Safari — Chrome on iPhone can't add apps to the home screen.</p>
     <button class="btn block" style="margin-top:10px" data-act="close">Got it</button></div>`);
 };
-ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; if(!S.sound) crowdStop(); save(); render(); if(S.sound) SFX.whistle(); };
+ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; if(!S.sound) crowdStop(); save(); render(); if(S.sound) SFX.good(); };
 ACTIONS.resetAll = ()=>modal(`<h2>Delete everything?</h2><p>This removes your career, cards, kit and unlocks from this device. It can't be undone.</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="close">Keep it</button><button class="btn grow" data-act="confirmReset" style="background:var(--red)">Delete</button></div>`);
 ACTIONS.confirmReset = ()=>{ closeModal(); S = freshSave(); save(); go('title'); };
@@ -1971,7 +1974,7 @@ async function runBout(){
     await new Promise(res=>{ ACTIONS.closeTut = ()=>{ closeModal(); res(); }; });
   }
   while(true){
-    if(B.ex===3){ stage(`<div class="panel" style="text-align:center"><h2>Period 2</h2><p class="muted">Score: ${B.my} - ${B.op}. ${B.my<B.op?"You're behind — dig deep!":B.my>B.op?'Keep the pressure on!':"It's all square!"}</p></div>`); shout(); SFX.whistle(); SFX.cheer(.35); await sleep(1500); }
+    if(B.ex===3){ stage(`<div class="panel" style="text-align:center"><h2>Period 2</h2><p class="muted">Score: ${B.my} - ${B.op}. ${B.my<B.op?"You're behind — dig deep!":B.my>B.op?'Keep the pressure on!':"It's all square!"}</p></div>`); shout(); SFX.cheer(.35); await sleep(1500); }
     await exchange();
     B.ex++; pips();
     const diff = B.my-B.op;
@@ -2008,7 +2011,7 @@ async function exchange(){
   const res = choice===plan ? 'scramble' : MOVES[choice].beats===plan ? 'attack' : 'defend';
   const hh = B.hist.length;
   if((unlocked('passivity') || hb==='rulebook') && hh>=3 && B.hist[hh-1]==='SPRAWL' && B.hist[hh-2]==='SPRAWL' && B.hist[hh-3]==='SPRAWL'){
-    B.op += 1; B.last='op'; B.theyScored = true; updScore(); floatPts('op','+1','#ff8a7a'); SFX.whistle(); setTimeout(()=>SFX.bad(), 250); say('Tusk: Passivity! Action!', 2000);
+    B.op += 1; B.last='op'; B.theyScored = true; updScore(); floatPts('op','+1','#ff8a7a'); SFX.bad(); say('Tusk: Passivity! Action!', 2000);
     stage(`<div class="panel" style="text-align:center">${sceneImg('sc_referee',135)}<div class="verdict bad">Tusk: "Passivity — Action!" 1 point to ${esc(shortName(o.name))}.</div></div>`); await sleep(1700);
   }
   stage(`<div class="panel"><div class="reveal">
@@ -2147,7 +2150,7 @@ async function specialExchange(shielded){
     <h2 style="margin:2px 0">${esc(sp.n)}</h2>
     <div class="small muted">${esc(sp.d)}</div>
     ${onSong?'<div class="verdict good" style="margin-top:8px">You are behind — the arch is there!</div>':''}</div>`);
-  SFX.whistle();
+  SFX.rattle();
   await sleep(1100);
 
   const q = await runMeter({w, pf:0, speed:sp.speed*(1+.12*ramp), label:`${sp.n} — one chance!`, time:3000, special:true});
