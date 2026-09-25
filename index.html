@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="description" content="Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0c11"><meta name="color-scheme" content="dark"><meta name="description" content="Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="WRSTL Legends">
 <title>WRSTL Legends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Nunito:wght@400;700;800;900&display=swap">
@@ -305,6 +305,10 @@ a.btn{text-decoration:none}
 /* match scene pictures */
 img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:contain;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.5);animation:pop .35s cubic-bezier(.3,1.5,.5,1)}
 
+.packq{display:grid;gap:10px;margin-top:8px}
+.pq{border:3px dashed #b89a6e;border-radius:14px;padding:10px}
+.pq.got{border:4px double #c0392b;background:rgba(192,57,43,.06)}
+
 /* opening titles */
 .introwrap{position:fixed;inset:0;z-index:9000;background:#07060a;display:flex;align-items:center;justify-content:center;
   opacity:1;transition:opacity .4s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -486,15 +490,15 @@ const BOSSES = {
     power:'Tough as his own scales', habit:{k:'slowstart', t:"Slow starter (he's always late!) — but he gets stronger after a fall."}, lesson:'Never give up, listen carefully, and turn up on time.'},
   pride:{name:'Pride the Lioness', img:'pride', role:'Level 2 of the Pathway', motto:"It's not over if I lose — it's over if I quit.", card:'headlockThrow', style:'technique',
     power:'Meditation & visualisation', habit:{k:'calm', t:'Hard to read — she gives very little away.'}, lesson:'A strong body helps you wrestle. A calm mind helps you believe in yourself.'},
-  amber:{name:'Amber the Lynx', img:'amber', role:"Level 3 · Pride's Pack", motto:'Move, be patient — then go.', card:'anklePick', style:'technique',
+  amber:{name:'Amber the Lynx', img:'amber', role:'Level 3 · T-shirt choice with Grey · Pride’s Pack', motto:'Move, be patient — then go.', card:'anklePick', style:'technique',
     power:'Notices everyone', habit:{k:'patient', t:'Watches and waits — repeat a move and she pounces.'}, lesson:'Watching is a superpower — if you use what you see.'},
   grey:{name:'Grey the Silverback', img:'grey', role:'Level 3 of the Pathway', motto:"Tell your mind you won't quit, and your body will adapt!", card:'armDrag', style:'strength',
     power:'Quick strategic thinking', habit:{k:'thinker', t:'Learns your favourite move fast. Keep him guessing.'}, lesson:'Train hard, think smart, learn every day.'},
-  rally:{name:'Rally the Hyena', img:'rally', role:"Level 4 · Pride's Pack", motto:'Nobody wins on their own.', card:'snapGoBehind', style:'conditioning',
+  rally:{name:'Rally the Hyena', img:'rally', role:'Level 4 · T-shirt choice with Paws · Pride’s Pack', motto:'Nobody wins on their own.', card:'snapGoBehind', style:'conditioning',
     power:'Team spirit', habit:{k:'tireless', t:'Never tires — the bar gets no easier late on.'}, lesson:'Laugh AND listen. Cheer loudest for everyone else.'},
   paws:{name:'Paws the Bear', img:'paws', role:'Level 4 of the Pathway', motto:"Don't stop when you're tired — stop when you're done.", card:'suplex', style:'strength',
     power:'Never giving up', habit:{k:'finisher', t:'Strong finisher — dangerous in the last exchanges.'}, lesson:'Work hard, stay strong, finish what you start.'},
-  sable:{name:'Sable the Panther', img:'sable', role:"Level 5 · Pride's Pack", motto:'Calm is my loudest move.', card:'lowSingle', style:'technique',
+  sable:{name:'Sable the Panther', img:'sable', role:'Level 5 · T-shirt choice with Hocopir · Pride’s Pack', motto:'Calm is my loudest move.', card:'lowSingle', style:'technique',
     power:'Wins calmly, loses calmly', habit:{k:'counter', t:'Waits for your shot and counters it. Make her attack you.'}, lesson:'Win calmly. Lose calmly. Shake hands every time.'},
   hocopir:{name:'Hocopir the Rhino', img:'hocopir', role:'Level 5 of the Pathway', motto:'Nothing stands in the way of hard work and heart.', card:'blastDouble', style:'strength',
     power:'Unstoppable forward drive', habit:{k:'forward', t:'Never sprawls — he only drives forward. Can you stop him?'}, lesson:'Work hard, lead with heart, and bring your team with you.'},
@@ -713,12 +717,24 @@ const MISSIONS = {
   budapest:[{k:'quiz_captain', t:"Pass Tusk's captain's test", i:'🐘'}, {k:'techSup', n:1, t:'Win by technical superiority', i:'🏆'}],
   olympics:[{k:'big4', n:2, t:'Score two 4-point big moves', i:'🌈'}, {k:'scoreTie', n:3, t:'Score with throws (Tie-up) 3 times', i:'✊'}],
 };
-// Pride's Pack: sportsmanship missions, earned anywhere
+// Pride's Pack: four stamps, one per quarter of a child's first year at the club (mirrors the paper passport, pp.55–58).
+// Each stamp has a child task and a coach task; both done = stamp earned. All four = Pack badge (+2 Heart). Earned anywhere on the map.
+// t = task name (as printed in the passport), g = what it means in the game, k/n = progress counter in S.pack (old saves default to 0).
 const PACK = [
-  {k:'loseWell', n:1, t:'Lose well: lose a bout, shake hands, then win your next one', i:'🤝'},
-  {k:'partners', n:1, t:'Train with three different partners: beat all 3 wrestlers at one gym', i:'👥'},
-  {k:'handshakes', n:15, t:'Shake hands before and after 15 bouts', i:'🫱'},
+  {id:'q1', q:'My first 3 months', who:'pride', theme:'Belonging', tasks:[
+    {k:'opps', n:5, t:'My team', g:'wrestle five different opponents', i:'👥'},
+    {k:'handshakes', n:10, t:'You shake hands', g:'shake hands before 10 bouts', i:'🤝'}]},
+  {id:'q2', q:'3 to 6 months', who:'amber', theme:'Noticing', tasks:[
+    {k:'reads', n:5, t:'Partner cards', g:'read the clue correctly five times', i:'👀'},
+    {k:'calmWin', n:1, t:'You go at their speed', g:'win a bout scoring only 1s and 2s, no 4-pointer', i:'🐢'}]},
+  {id:'q3', q:'6 to 9 months', who:'sable', theme:'Opponents', tasks:[
+    {k:'loseWell', n:1, t:'Win or learn', g:'lose a bout, then win your very next bout', i:'📘'},
+    {k:'backOnMat', n:3, t:'The same wrestler either way', g:'after a loss, go straight back on the mat three times', i:'🔁'}]},
+  {id:'q4', q:'9 to 12 months', who:'rally', theme:'Team', tasks:[
+    {k:'sigDrills', n:5, t:'Teach your best move', g:'complete five training drills of your signature stat', i:'🏋️'},
+    {k:'partners', n:1, t:'You look out for people', g:'beat all three wrestlers at one stop', i:'🫶'}]},
 ];
+const PACK_TASKS = PACK.flatMap(s=>s.tasks);
 // ---- The Pathway: six levels, exactly as in the paper passport ----
 // The real passport runs Honey → Komodo & Pride → Grey → Paws → Hocopir → Phoenix,
 // and every page says the same thing: finish a mission, then GET YOUR STAMP FROM
@@ -787,7 +803,8 @@ const SCENES = {
 const BOSS_SCENE = {honey:'sc_takedown_badger', komodo:'sc_sprawl_croc', pride:'sc_collar_cats', amber:'sc_single', grey:'sc_hipthrow_gorilla', rally:'sc_double_hyena', paws:'sc_collar_bear', sable:'sc_headlock_panther', hocopir:'sc_suplex_rhino', tusk:'sc_referee', phoenix:'mv_handfight'};
 const RARITY_ORDER = ['common','rare','epic','legendary'];
 // Set this to the real WRSTL web address when it is ready, e.g. 'https://www.wrstl.club' — the More screen button links there automatically.
-const WRSTL_URL = '';
+const WRSTL_URL = 'https://www.wrstl.club';
+const GAME_VERSION = '1.5';
 // Player tracker: paste the Google Apps Script web app URL here (see wrstl-legends-tracker/Code.gs). Empty = tracking off.
 const TELEMETRY_URL = 'https://script.google.com/macros/s/AKfycbzLFe7BI0qjsFZ9Hcw-kLK8vr4MtuFJESgR4PpTaVuCfXO8t9LFJmWSm42nOzBu44_w/exec';
 const GAME_VER = '1.4';
@@ -810,7 +827,7 @@ function freshSave(){
   return {v:2, char:null, name:'', av:null, style:'speed', lvl:1, xp:0, pts:0, stats:null, trained:{}, coins:0, energy:20, energyAt:Date.now(),
     gymWins:{}, stamps:{}, cards:{}, equip:[], kit:{owned:{clubSinglet:1}, eq:{singlet:'clubSinglet'}},
     loc:'hq', phoenix:false, rises:0, sound:true, bouts:0, wins:0, tut:false, seenMapTip:false,
-    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0,
+    mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packOpps:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0,
     sp:'', spUses:0, path:0, drills:{}, pathDrills:{}};
 }
 function loadSave(){
@@ -1136,14 +1153,20 @@ function mission(k, n=1, gid){
 function misProgress(gid, m){ return m.k==='streak' ? Math.min(misNeed(m), Math.max(misGet(gid,'streak'), 0)) : misGet(gid, m.k); }
 
 // ---- Pride's Pack ----
+function packGot(t){ return Math.min(t.n, S.pack[t.k]||0); }
+function packStampDone(st){ return st.tasks.every(t=>packGot(t)>=t.n); }
 function pack(k, n=1){
-  const m = PACK.find(x=>x.k===k); if(!m) return;
+  const m = PACK_TASKS.find(x=>x.k===k); if(!m) return;
   if((S.pack[k]||0)>=m.n) return;
+  const st = PACK.find(s=>s.tasks.includes(m)), wasDone = packStampDone(st);
   S.pack[k] = Math.min(m.n, (S.pack[k]||0)+n);
-  if(S.pack[k]>=m.n){ toast(`🐾 Pack mission done: ${esc(m.t)}`, 2600); }
-  if(!S.packBadge && PACK.every(x=>(S.pack[x.k]||0)>=x.n)){ S.packBadge = true; S.stats.hrt += 2; }
+  if(S.pack[k]>=m.n){ toast(`🐾 Pack task done: ${esc(m.t)}`, 2600); }
+  if(!wasDone && packStampDone(st)){ toast(`🐾 Pack stamp earned: ${esc(st.q)} — ${esc(BOSSES[st.who].name)}`, 3200); SFX.good(); }
+  if(!S.packBadge && PACK.every(packStampDone)){ S.packBadge = true; S.stats.hrt += 2; toast('🐾 PACK BADGE! All four stamps — +2 Heart', 3200); }
   save();
 }
+// distinct opponents faced (Q1 · My team)
+function packOpp(name){ S.packOpps = S.packOpps||{}; if(S.packOpps[name]) return; S.packOpps[name] = 1; pack('opps'); }
 
 // ---- unlocks that grow with level ----
 function unlocked(k){ const u = UNLOCKS.find(x=>x.k===k); return !!(u && S.stamps[u.after]); }
@@ -1703,12 +1726,21 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
                : `<div class="stamp"><div><div class="e" style="opacity:.4">${g.icon}</div><div>${esc(g.name)}</div><div style="font-size:10px">${done?`Missions ${done}/${tot}`:'Level '+g.lvl}</div></div></div>`;}).join('')}</div></div>`).join('')}
     <div style="margin-top:18px"><h3>My level T-shirts</h3><div class="tees">${Object.keys(BOSSES).map(b=>`<div class="tee ${S.tees[b]?'':'off'}" style="background:${S.tees[b]?teeCol(b):'#cbbda0'}">👕 ${esc(BOSSES[b].name.split(' ')[0])}</div>`).join('')}</div></div>
     <div style="margin-top:18px"><div class="row"><h3 class="grow">🐾 Pride's Pack</h3>${S.packBadge?'<span class="stampmark">PACK BADGE</span>':''}</div>
-      <p class="small" style="margin:4px 0 8px">Sportsmanship missions, earned anywhere. Fill the page for your Pack badge (+2 Heart).</p>
-      ${PACK.map(m=>{ const p=Math.min(m.n,S.pack[m.k]||0), done=p>=m.n; return `<div class="mis ${done?'done':''}" style="background:rgba(255,255,255,.45);color:#2a1c10"><span class="mi">${done?'✅':m.i}</span><div class="grow"><b>${esc(m.t)}</b>${m.n>1?`<div class="small">${p} / ${m.n}</div>`:''}</div></div>`; }).join('')}</div>
+      <p class="small" style="margin:4px 0 8px">Pride's Pack — four stamps, one for each quarter of your first year at the club. In the game you can earn them anywhere on the map. Your real Pack stamps come from your coach, on stamping day.</p>
+      <p class="small" style="margin:0 0 8px">Earn all four for your Pack badge (+2 Heart).</p>
+      ${packPage()}
     <div style="margin-top:18px"><h3>My competition record</h3>
       ${S.record.length?`<table class="rec">${S.record.map(r=>`<tr><td>${esc(r.d)}</td><td>${esc(r.v)}${r.boss?' 👑':''}</td><td>${esc(r.s)}</td><td style="color:${r.w?'#1f7a3a':'#b03030'};font-weight:900">${r.w?'WIN':'LOSS'}</td></tr>`).join('')}</table>`:'<p class="small">Your last 12 bouts will appear here. Win or learn — write it down!</p>'}
       <div class="small" style="margin-top:6px">Total: <b>${S.wins}</b> wins from <b>${S.bouts}</b> bouts · best streak counts on the club and Team GB missions</div></div>
   </div></div>${nav()}`;
+
+// Pride's Pack page: four quarter stamps, each fronted by a squad character
+function packPage(){
+  return `<div class="packq">${PACK.map((st,i)=>{ const b=BOSSES[st.who], done=packStampDone(st);
+    return `<div class="pq ${done?'got':''}"><div class="row" style="gap:10px"><img src="${IMG[b.img]}" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;background:rgba(0,0,0,.08)">
+      <div class="grow"><div class="small" style="letter-spacing:1.5px;font-weight:900;color:#7a3310">STAMP ${i+1} · ${esc(st.q.toUpperCase())}</div><div style="font-weight:900">${esc(b.name)} · ${esc(st.theme)}</div></div>${done?'<span class="stampmark">STAMPED</span>':''}</div>
+      ${st.tasks.map(t=>{ const p=packGot(t), ok=p>=t.n; return `<div class="mis ${ok?'done':''}" style="background:rgba(255,255,255,.45);color:#2a1c10;margin-top:6px"><span class="mi">${ok?'✅':t.i}</span><div class="grow"><b>${esc(t.t)}</b><div class="small">${esc(t.g)}</div></div><span class="pill" style="background:${ok?'#1f7a3a':'#7a3310'};color:#fff">${p}/${t.n}</span></div>`; }).join('')}</div>`; }).join('')}</div>`;
+}
 
 // The pathway strip: six levels, signed off by the coach — the same six as the
 // paper passport, so a child sees the two lining up.
@@ -1747,7 +1779,7 @@ RENDER.more = ()=>`${hud()}<div class="screen">
     <button class="btn ghost" data-act="toSelect">🔁 New career</button>
     <button class="btn ghost" data-act="resetAll" style="color:#ff8a7a">Delete all progress</button>
   </div>
-  <div style="text-align:center;margin-top:16px"><img src="${IMG.logo_h}" alt="WRSTL" style="width:140px" data-act="ownerTap"><p class="small muted" style="margin:4px 0 0">WRSTL Legends · Phoenix Wrestling Club · www.WRSTL.club · @WRSTL_club</p></div>
+  <div style="text-align:center;margin-top:16px"><img src="${IMG.logo_h}" alt="WRSTL" style="width:140px" data-act="ownerTap"><p class="small muted" style="margin:4px 0 0">WRSTL Legends ${GAME_VERSION} · Phoenix Wrestling Club · www.WRSTL.club · @WRSTL_club</p></div>
 </div>${nav()}`;
 function howToScore(){ return `<h3>How to score (just like the passport)</h3>
   <div class="scoregrid">
@@ -1886,7 +1918,8 @@ function crowdSize(opp){
   return clamp([.28,.5,.75,1][g.z] + (opp.champ?.12:0), .2, 1);
 }
 function startBout(opp){
-  B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false, shield:false};
+  B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false, shield:false, big4:false};
+  if(S.lastLoss) pack('backOnMat');
   screen = 'bout'; UI.tap = null; UI.choose = null;
   SFX.crowdStart(crowdSize(opp)*.6);
   app.innerHTML = boutShell(); window.scrollTo(0,0);
@@ -2031,6 +2064,7 @@ async function exchange(){
   // meter setup
   let myStat, opStat, type, label;
   const om = oppMul();
+  if(honest && res==='attack') pack('reads');
   if(res==='attack'){ type=choice; myStat=statOf(MOVES[choice].stat); opStat=o.stats[MOVES[choice].stat]*om; label=`Land your ${MOVES[choice].n.toLowerCase()}!`; }
   else if(res==='defend'){ type='DEF'; myStat=statOf(MOVES[plan].stat); opStat=o.stats[MOVES[plan].stat]*om; label=`Stop their ${MOVES[plan].n.toLowerCase()}!`; }
   else { type='SCR'; myStat=statOf('hrt'); opStat=o.stats.hrt*om; label='Win the scramble!'; }
@@ -2056,7 +2090,7 @@ async function exchange(){
   const n1 = shortName(o.name);
   if(res==='attack'){
     const big = cardBig(type);
-    if(q==='perfect'){ myP = big?5:4; text = big ? `${big.c.n}! BIG THROW — 4 points!` : {SHOOT:'Lifted and dumped to their back — 4 points!',TIE:'Big throw — 4 points!',SPRAWL:'Sprawl, spin and turn — 4 points!'}[type]; kind='good'; }
+    if(q==='perfect'){ B.big4 = true; myP = big?5:4; text = big ? `${big.c.n}! BIG THROW — 4 points!` : {SHOOT:'Lifted and dumped to their back — 4 points!',TIE:'Big throw — 4 points!',SPRAWL:'Sprawl, spin and turn — 4 points!'}[type]; kind='good'; }
     else if(q==='good'){ myP=2; text={SHOOT:'Takedown — 2 points!',TIE:'Snap down, go behind — 2 points!',SPRAWL:'Sprawl and go behind — 2 points!'}[type]; kind='good'; }
     else { if(Math.random()<(hb==='counter'?.45:.25)){ opP=2; text={SHOOT:`${n1} sprawls and spins behind — 2 to them.`,TIE:`${n1} counters your throw — 2 to them.`,SPRAWL:`${n1} gets behind you — 2 to them.`}[type]; } else text={SHOOT:`${n1} stuffed your shot.`,TIE:`${n1} broke your grip.`,SPRAWL:`${n1} got away.`}[type]; kind='bad'; }
     if(myP>0 && type==='SHOOT') mission('scoreShoot'); if(myP>0 && type==='TIE') mission('scoreTie');
@@ -2084,7 +2118,7 @@ async function exchange(){
     if(pickT==='use'){
       const ct = cardTurn();
       const qt = await runMeter({w:clamp(.11+ct.z,.08,.35), pf:.3, speed:speed*1.05, label:'Turn them! Gut wrench…', time:3600});
-      if(qt==='perfect'){ myP = ct.dbl?4:2; follow = ct.dbl?'Ankle lace — rolled twice! +4':'Perfect turn — roll! +2'; SFX.perfect(); }
+      if(qt==='perfect'){ myP = ct.dbl?4:2; if(ct.dbl) B.big4 = true; follow = ct.dbl?'Ankle lace — rolled twice! +4':'Perfect turn — roll! +2'; SFX.perfect(); }
       else if(qt==='good'){ myP = 2; follow = 'Turned them — roll! +2'; }
       else { opP = 1; follow = `${n1} escapes! 1 point to them.`; }
     } else follow = 'Settled. Control kept.';
@@ -2164,7 +2198,7 @@ async function specialExchange(shielded){
   const q = await runMeter({w, pf:0, speed:sp.speed*(1+.12*ramp), label:`${sp.n} — one chance!`, time:3000, special:true});
 
   if(q!=='miss'){
-    B.my += SPECIAL_PTS; B.last='me'; updScore();
+    B.my += SPECIAL_PTS; B.last='me'; B.big4 = true; updScore();
     lunge('me'); hit('op'); floatPts('me','+'+SPECIAL_PTS,'#f5c542');
     SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); SFX.cheer(.9);
     say(`${SPECIAL_PTS} points!`, 2200);
@@ -2273,6 +2307,8 @@ async function endBout(win, how){
   S.coins += coins;
   let cardMsg = '', firstBoss = false;
   recordBout(o, win, how);
+  packOpp(o.name);
+  if(win && B.my>0 && !B.big4) pack('calmWin');
   if(win){ S.streak = (S.streak||0)+1; if(S.lastLoss) pack('loseWell'); } else S.streak = 0;
   S.lastLoss = !win;
   pack('handshakes');
@@ -2422,7 +2458,7 @@ ACTIONS.drillGo = async d=>{
     await sleep(500);
   }
   gain = Math.min(gain, 1-(S.trained[k]||0));
-  S.trained[k] = (S.trained[k]||0)+gain; S.stats[k] += gain; mission('drills', 1, g.id);
+  S.trained[k] = (S.trained[k]||0)+gain; S.stats[k] += gain; mission('drills', 1, g.id); if(me().sig.includes(k)) pack('sigDrills');
   S.drills[k] = (S.drills[k]||0)+1;   // Coach Phoenix looks at this at sign-off time
   const ups = addXP(xp); save();
   modal(`<div style="text-align:center"><div style="font-size:50px">${s.i}</div><h2>Session done!</h2><p><b>+${gain} ${s.n}</b> · ✨ +${xp} XP</p><button class="btn block" data-act="drillDone">Back to the gym</button></div>`);
@@ -2433,6 +2469,8 @@ ACTIONS.drillGo = async d=>{
 };
 
 // ---------- boot ----------
+// a home-screen shortcut can open straight onto a screen (manifest "shortcuts")
+if(location.hash==='#passport' && S.char){ screen = 'passport'; history.replaceState(null, '', location.pathname); }
 render();
 
 // ---------- opening titles ----------
