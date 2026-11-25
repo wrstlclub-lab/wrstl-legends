@@ -1,4 +1,20 @@
-# WRSTL Legends 1.5 — deploying and going to the app stores
+# WRSTL Legends 1.6 — deploying and going to the app stores
+
+## What changed in 1.6
+- Fast start: make a wrestler, then straight onto the mat for a guided welcome session with Honey
+  (three lessons, cannot be lost). Wrestling style is chosen after it, not before. Anyone who had
+  made a wrestler but never wrestled gets the welcome session on their first tap of Wrestle.
+- The bout: full-body wrestlers that act out the clue and the moves, arena, impact bursts, screen
+  shake, vibration (Android), confetti and a win celebration. Win or lose, they shake hands.
+- Helper mode (More screen, or chosen in the welcome session): reads the game out loud, picture
+  hints, glowing suggestion, easier timing. Picture hints also show for everyone's first bouts at
+  the home club, and the home club's timing bar is gentler for everyone.
+- Daily bag from Coach Phoenix (champion bag every third day in a row), challenge of the day,
+  and a wrestler card to save or share (wrestling name and cartoon only).
+- Form: three wins in a row and opponents raise their game (+5% each win, with +10% XP and coins);
+  two losses in a row and they ease off. Boss rematches gain 2 levels per win, up to five stars.
+- Club screen leads with one next step from Coach Phoenix.
+- Fix: the game reported itself to the player sheet as 1.4; it now reports its real version.
 
 ## What changed in 1.5
 - Pride's Pack now mirrors passport v31: four quarter stamps (Pride / Amber / Sable / Rally),

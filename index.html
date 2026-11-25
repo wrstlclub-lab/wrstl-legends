@@ -378,6 +378,138 @@ img.scene{display:block;width:100%;max-width:340px;margin:6px auto;object-fit:co
 .pathrow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .pathrow img{height:52px;width:52px;object-fit:contain;flex:0 0 auto}
 
+/* ---------- 1.6: full-body wrestlers and the poses they take ---------- */
+.mat{height:clamp(230px,34vh,300px)}
+.mat .circle{top:auto;bottom:-2px;left:50%;width:min(96%,380px);height:104px;transform:translateX(-50%)}
+.fighter{bottom:26px;width:138px;height:calc(100% - 46px);max-height:232px;transition:none;z-index:2}
+.fighter.me{left:calc(50% - 146px)}.fighter.op{right:calc(50% - 146px)}
+.fighter .fpose{position:absolute;inset:0;transform-origin:50% 100%;transition:transform .32s cubic-bezier(.3,1.5,.5,1);will-change:transform}
+.fighter .fpose svg.fig,.fighter .fpose img.bossfig{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 5px rgba(0,0,0,.55))}
+.fighter.op .fpose svg.fig{transform:scaleX(-1)}
+.fig .f-body{transform-box:view-box;transform-origin:60px 190px;transition:transform .28s cubic-bezier(.3,1.4,.5,1)}
+.fig .f-arm{transform-box:view-box;transition:transform .26s cubic-bezier(.3,1.5,.5,1)}
+.fig .f-armL{transform-origin:40px 90px}.fig .f-armR{transform-origin:80px 90px}
+.fig .f-head{transform-box:view-box;transform-origin:60px 76px;transition:transform .26s}
+/* ready: a light bounce, like a wrestler waiting on the whistle */
+.fighter[data-pose="ready"] .fpose{animation:bob 1.5s ease-in-out infinite}
+.fig .f-armL{transform:rotate(34deg)}.fig .f-armR{transform:rotate(-34deg)}
+.fighter.op[data-pose="ready"] .fpose{animation-delay:-.7s}
+@keyframes bob{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(2px) scaleY(.972)}}
+/* the three things a wrestler can be about to do */
+.fighter.me[data-pose="shoot"] .fpose{transform:translateX(8px) scaleY(.76) rotate(12deg)}
+.fighter.op[data-pose="shoot"] .fpose{transform:translateX(-8px) scaleY(.76) rotate(-12deg)}
+.fighter[data-pose="shoot"] .f-armL{transform:rotate(-58deg)}.fighter[data-pose="shoot"] .f-armR{transform:rotate(-82deg) scaleY(1.15)}
+.fighter.me[data-pose="tie"] .fpose{transform:translateX(14px) scale(1.05)}
+.fighter.op[data-pose="tie"] .fpose{transform:translateX(-14px) scale(1.05)}
+.fighter[data-pose="tie"] .f-armL{transform:rotate(-118deg) scaleY(1.2)}.fighter[data-pose="tie"] .f-armR{transform:rotate(-112deg) scaleY(1.35)}
+.fighter.me[data-pose="sprawl"] .fpose{transform:translateX(-16px) scaleY(.86) rotate(-9deg)}
+.fighter.op[data-pose="sprawl"] .fpose{transform:translateX(16px) scaleY(.86) rotate(9deg)}
+.fighter[data-pose="sprawl"] .f-armL{transform:rotate(-20deg)}.fighter[data-pose="sprawl"] .f-armR{transform:rotate(-48deg)}
+/* the clue: the same three, held and breathing so a child can read the body, not the words */
+.fighter.tell .fpose{animation:tellpulse 1s ease-in-out infinite}
+@keyframes tellpulse{0%,100%{filter:none}50%{filter:brightness(1.18)}}
+/* contact */
+.fighter.me[data-pose="drive"] .fpose{transform:translateX(74px) scaleY(.8) rotate(16deg)}
+.fighter.op[data-pose="drive"] .fpose{transform:translateX(-74px) scaleY(.8) rotate(-16deg)}
+.fighter[data-pose="drive"] .f-armL{transform:rotate(-70deg) scaleY(1.2)}.fighter[data-pose="drive"] .f-armR{transform:rotate(-86deg) scaleY(1.3)}
+.fighter.me[data-pose="lock"] .fpose{transform:translateX(52px) scale(1.04)}
+.fighter.op[data-pose="lock"] .fpose{transform:translateX(-52px) scale(1.04)}
+.fighter[data-pose="lock"] .f-armL{transform:rotate(-100deg) scaleY(1.2)}.fighter[data-pose="lock"] .f-armR{transform:rotate(-100deg) scaleY(1.35)}
+.fighter.me[data-pose="lift"] .fpose{transform:translateX(60px) translateY(-8px) scale(1.1)}
+.fighter.op[data-pose="lift"] .fpose{transform:translateX(-60px) translateY(-8px) scale(1.1)}
+.fighter[data-pose="lift"] .f-armL{transform:rotate(-132deg) scaleY(1.3)}.fighter[data-pose="lift"] .f-armR{transform:rotate(-128deg) scaleY(1.45)}
+.fighter.me[data-pose="down"] .fpose{transform:translateX(64px) translateY(2px) rotate(-82deg) scale(.82);transition-duration:.22s}
+.fighter.op[data-pose="down"] .fpose{transform:translateX(-64px) translateY(2px) rotate(82deg) scale(.82);transition-duration:.22s}
+.fighter.me[data-pose="thrown"] .fpose{animation:thrownMe .7s cubic-bezier(.3,.1,.4,1) forwards}
+.fighter.op[data-pose="thrown"] .fpose{animation:thrownOp .7s cubic-bezier(.3,.1,.4,1) forwards}
+@keyframes thrownOp{0%{transform:none}45%{transform:translate(-30px,-96px) rotate(150deg) scale(.95)}100%{transform:translate(-64px,2px) rotate(82deg) scale(.82)}}
+@keyframes thrownMe{0%{transform:none}45%{transform:translate(30px,-96px) rotate(-150deg) scale(.95)}100%{transform:translate(64px,2px) rotate(-82deg) scale(.82)}}
+.fighter.me[data-pose="back"] .fpose{transform:translateX(-22px) rotate(-6deg)}
+.fighter.op[data-pose="back"] .fpose{transform:translateX(22px) rotate(6deg)}
+.fighter[data-pose="win"] .fpose{animation:winjump .62s ease-in-out infinite}
+@keyframes winjump{0%,100%{transform:translateY(0) scaleY(.96)}45%{transform:translateY(-26px) scaleY(1.04)}}
+.fighter[data-pose="win"] .f-armL{transform:rotate(150deg) scaleY(1.5)}.fighter[data-pose="win"] .f-armR{transform:rotate(-150deg) scaleY(1.5)}
+.fighter[data-pose="sad"] .fpose{transform:scaleY(.93);filter:saturate(.7) brightness(.85)}
+.fighter[data-pose="sad"] .f-head{transform:rotate(7deg) translateY(3px)}
+.fighter[data-pose="sad"] .f-armL{transform:rotate(8deg)}.fighter[data-pose="sad"] .f-armR{transform:rotate(-8deg)}
+.fighter.me[data-pose="shake"] .fpose{transform:translateX(46px)}.fighter.op[data-pose="shake"] .fpose{transform:translateX(-46px)}
+.fighter[data-pose="shake"] .f-armR{transform:rotate(-80deg) scaleY(1.25)}
+.fighter.hit .fpose{animation:hit .42s}
+@media (max-width:380px){.fighter{width:118px;height:calc(100% - 46px)}.fighter.me{left:calc(50% - 128px)}.fighter.op{right:calc(50% - 128px)}}
+@media (prefers-reduced-motion:reduce){.fighter[data-pose="ready"] .fpose,.fighter.tell .fpose,.fighter[data-pose="win"] .fpose{animation:none}}
+
+/* ---------- 1.6: arena, impact, celebration ---------- */
+.fighter.hit{animation:none}
+.fighter.me{left:calc(50% - 158px)}.fighter.op{right:calc(50% - 158px)}
+.mat .tusk{top:auto;bottom:88px;width:56px;z-index:1}.mat .tusk img{width:56px;height:68px}
+.mat .bubble{z-index:8;top:auto;bottom:calc(88px + 62px)}
+.mat:before{content:"";position:absolute;left:-12px;right:-12px;top:-4px;height:62%;pointer-events:none;opacity:.9;
+  background:
+    radial-gradient(circle at 50% 100%,#2a2130 9px,transparent 10px) 0 100%/22px 22px repeat-x,
+    radial-gradient(circle at 50% 100%,#221a28 10px,transparent 11px) 11px calc(100% - 14px)/26px 24px repeat-x,
+    radial-gradient(circle at 50% 100%,#1a141f 11px,transparent 12px) 4px calc(100% - 30px)/30px 26px repeat-x,
+    linear-gradient(180deg,transparent 0,transparent 46%,#1a141f 46%,#221a28 78%,#2a2130 100%);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 35%);mask-image:linear-gradient(180deg,transparent 0,#000 35%)}
+.mat:after{content:"";position:absolute;left:-12px;right:-12px;top:-40px;bottom:0;pointer-events:none;
+  background:conic-gradient(from 168deg at 16% -6%,rgba(255,236,190,.16) 0 9deg,transparent 9deg),conic-gradient(from 183deg at 84% -6%,rgba(255,236,190,.16) 0 9deg,transparent 9deg)}
+.bout.shk{animation:shk .28s}.bout.shkbig{animation:shkbig .5s}
+@keyframes shk{0%,100%{transform:none}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,1px)}}
+@keyframes shkbig{0%,100%{transform:none}15%{transform:translate(-9px,5px) rotate(-.6deg)}30%{transform:translate(9px,-5px) rotate(.6deg)}45%{transform:translate(-7px,3px)}60%{transform:translate(6px,-3px)}80%{transform:translate(-3px,1px)}}
+.flash{position:absolute;inset:0;z-index:50;pointer-events:none;opacity:.5;animation:flashout .42s forwards}
+@keyframes flashout{to{opacity:0}}
+.impact{position:absolute;left:50%;top:44%;width:124px;height:124px;margin:-62px 0 0 -62px;z-index:6;pointer-events:none;display:grid;place-items:center;animation:impact .85s cubic-bezier(.2,1.6,.4,1) forwards}
+.impact svg{position:absolute;inset:0;width:100%;height:100%}
+.impact b{position:relative;font-family:var(--display);font-size:36px;color:#0b0a0d}
+@keyframes impact{0%{transform:scale(.2) rotate(-25deg);opacity:0}22%{transform:scale(1.18) rotate(6deg);opacity:1}70%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(1.3);opacity:0}}
+.confetti{position:fixed;inset:0;z-index:130;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-18px;width:9px;height:14px;border-radius:2px;animation:confall linear forwards}
+@keyframes confall{to{transform:translate3d(var(--dx),110vh,0) rotate(var(--rot))}}
+.sc .pts.pop{animation:ptpop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes ptpop{0%{transform:scale(1)}40%{transform:scale(1.55);color:var(--gold)}100%{transform:scale(1)}}
+.banner{position:absolute;left:0;right:0;top:92px;z-index:9;text-align:center;font-family:var(--display);font-size:clamp(40px,13vw,58px);letter-spacing:3px;color:var(--gold);text-shadow:0 4px 0 #000,0 0 24px rgba(245,197,66,.6);animation:banner 1.7s cubic-bezier(.2,1.5,.4,1) forwards;pointer-events:none}
+@keyframes banner{0%{transform:scale(.3) rotate(-8deg);opacity:0}18%{transform:scale(1.1) rotate(-3deg);opacity:1}82%{transform:scale(1) rotate(-3deg);opacity:1}100%{transform:scale(1) rotate(-3deg);opacity:0}}
+@media (max-width:380px){.fighter.me{left:calc(50% - 136px)}.fighter.op{right:calc(50% - 136px)}}
+@media (prefers-reduced-motion:reduce){.bout.shk,.bout.shkbig,.impact,.banner{animation-duration:.01s}}
+
+/* ---------- 1.6: picture clues, colour-matched moves ---------- */
+.m-SHOOT{--mc:#f5c542}.m-TIE{--mc:#ff6b5e}.m-SPRAWL{--mc:#5aa0ff}
+.bout .choice{padding:13px 4px 11px;border-bottom:6px solid var(--mc,var(--line))}
+.bout .choice b{font-size:36px}
+.bout .choice small{font-size:11.5px}
+.bout .choice small span{color:var(--mc);font-weight:900;white-space:nowrap}
+.choice.glow{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,197,66,.3);animation:glow 1s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 2px rgba(245,197,66,.55)}50%{box-shadow:0 0 0 9px rgba(245,197,66,0)}}
+.choice.dim{opacity:.28;pointer-events:none}
+.hintchip{display:inline-flex;gap:6px;align-items:center;margin-top:7px;padding:4px 11px;border-radius:99px;background:rgba(255,255,255,.07);border:2px solid var(--mc);font-weight:800;font-size:14px}
+.hintchip b{color:var(--mc)}
+.heatline{margin:0 0 10px;padding:7px 10px;border-radius:12px;background:rgba(229,72,63,.16);border:1px solid rgba(229,72,63,.5);font-size:13px;font-weight:800}
+.tri{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0;font-weight:900}
+.tri span{padding:6px 10px;border-radius:12px;background:var(--panel2);border:2px solid var(--mc)}
+.qn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#111;margin-right:8px;flex:none;font-family:var(--display)}
+.bigpick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bigpick button{background:var(--panel2);border:3px solid var(--line);border-radius:18px;padding:16px 8px;font-weight:900;font-size:15px;line-height:1.25}
+.bigpick button b{display:block;font-size:44px;line-height:1.1}
+.bigpick button.on{border-color:var(--gold);background:#3a2c10}
+
+/* ---------- 1.6: fast start, club screen, daily ---------- */
+.stickybar{position:sticky;bottom:0;z-index:5;margin:14px -16px -30px;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(14,12,17,0),rgba(14,12,17,.97) 34%)}
+.nudge{animation:nudge 1.2s ease-in-out infinite}
+@keyframes nudge{0%,100%{box-shadow:0 4px 0 #9c4410,0 0 0 0 rgba(245,197,66,.75)}50%{box-shadow:0 4px 0 #9c4410,0 0 0 9px rgba(245,197,66,0)}}
+.btn.gold.nudge{animation-name:nudgeg}
+@keyframes nudgeg{0%,100%{box-shadow:0 4px 0 #8f6d12,0 0 0 0 rgba(245,197,66,.75)}50%{box-shadow:0 4px 0 #8f6d12,0 0 0 9px rgba(245,197,66,0)}}
+.gymhead.compact{padding:12px 14px}
+.gymhead.compact .big{font-size:40px;top:8px}
+.gymhead.compact h2{font-size:21px}
+.nextstep{margin-top:10px}
+.nextstep .say{font-size:15px;font-weight:800;line-height:1.3}
+.dcrow{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--panel2);border:1px dashed var(--gold);font-size:13px;font-weight:800}
+.dcrow.done{border-style:solid;border-color:var(--green)}
+.dcrow .grow{min-width:0}
+.stars{letter-spacing:1px;color:var(--gold);font-size:13px}
+.stars i{font-style:normal;opacity:.3}
+.testtag{position:fixed;top:6px;left:6px;z-index:200;background:var(--red);color:#fff;font:900 10px var(--body);letter-spacing:1px;padding:3px 7px;border-radius:6px;pointer-events:none;opacity:.9}
+.cardprev{width:100%;border-radius:14px;display:block;border:1px solid var(--line)}
+
 </style>
 </head><body><div id="app"></div>
 <script>
@@ -459,6 +591,51 @@ function avatarURI(a){
   const k = JSON.stringify(a);
   if(!_avCache.has(k)) _avCache.set(k, 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(avatarSVG(a)));
   return _avCache.get(k);
+}
+
+
+// ===================== FULL-BODY WRESTLERS (1.6) =====================
+// The bout used to show two head-and-shoulders cards. This draws the same
+// avatar with a body under it, in parts (legs, torso, two arms, head) so the
+// stylesheet can pose it: stance, level change, hands high, sprawl, lift, down.
+// The bosses keep their own artwork and are posed as a whole picture.
+function figureSVG(a){
+  a = a||{};
+  const skin = a.skin||SKINS[1], sk2 = shade(skin,-.14), sing = a.singlet||'#F27121', s2 = a.trim||shade(sing,-.3);
+  const boot = a.boot||'#23202a';
+  const head = avatarSVG(Object.assign({}, a, {logo:''}))
+    .replace('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110">', '<svg x="11" y="0" width="98" height="78.4" viewBox="0 0 100 80" overflow="hidden">');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 200" class="fig" aria-hidden="true">
+    <ellipse class="f-shadow" cx="60" cy="193" rx="42" ry="6" fill="#000" opacity=".38"/>
+    <g class="f-body">
+      <g class="f-legs">
+        <path d="M50 134 L37 160 L36 183" stroke="${skin}" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M70 134 L83 160 L84 183" stroke="${skin}" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M50 134 L42 151" stroke="${sing}" stroke-width="17" stroke-linecap="round"/>
+        <path d="M70 134 L78 151" stroke="${sing}" stroke-width="17" stroke-linecap="round"/>
+        <path d="M42 151 l-1 3" stroke="${s2}" stroke-width="17" stroke-linecap="butt"/>
+        <path d="M78 151 l1 3" stroke="${s2}" stroke-width="17" stroke-linecap="butt"/>
+        <path d="M24 192 v-4 q0 -9 9 -9 h8 q5 0 5 6 v7z" fill="${boot}"/><path d="M24 192 h22 v-3 h-22z" fill="#fff" opacity=".85"/>
+        <path d="M96 192 v-4 q0 -9 -9 -9 h-8 q-5 0 -5 6 v7z" fill="${boot}"/><path d="M96 192 h-22 v-3 h22z" fill="#fff" opacity=".85"/>
+      </g>
+      <g class="f-torso">
+        <path d="M36 96 Q36 78 52 78 L68 78 Q84 78 84 96 L80 132 Q78 144 60 144 Q42 144 40 132Z" fill="${skin}"/>
+        <path d="M44 80 Q47 98 60 100 Q73 98 76 80 L84 96 L80 132 Q78 144 60 144 Q42 144 40 132 L36 96Z" fill="${sing}"/>
+        <path d="M44 80 Q47 98 60 100 Q73 98 76 80" stroke="${s2}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M37 100 L40 132 M83 100 L80 132" stroke="${s2}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+        <text x="60" y="122" font-family="Arial Black,Arial" font-size="9" font-weight="900" text-anchor="middle" fill="${s2}">${esc(a.logo||'')}</text>
+      </g>
+      <g class="f-arm f-armL"><path d="M40 90 Q36 108 39 124" stroke="${skin}" stroke-width="12.5" stroke-linecap="round" fill="none"/><circle cx="39" cy="125" r="7.6" fill="${sk2}"/></g>
+      <g class="f-arm f-armR"><path d="M80 90 Q84 108 81 124" stroke="${skin}" stroke-width="12.5" stroke-linecap="round" fill="none"/><circle cx="81" cy="125" r="7.6" fill="${sk2}"/></g>
+      <g class="f-head">${head}</g>
+    </g>
+  </svg>`;
+}
+// One wrestler on the mat. who = 'me' | 'op'. Bosses pass their picture.
+function fighterHTML(who, av, img){
+  return `<div class="fighter ${who}" id="${who==='me'?'fMe':'fOp'}" data-pose="ready"><div class="fpose">${img
+    ? `<img class="bossfig" src="${img}" alt="">`
+    : figureSVG(av)}</div></div>`;
 }
 
 // ===================== GAME DATA =====================
@@ -804,10 +981,12 @@ const BOSS_SCENE = {honey:'sc_takedown_badger', komodo:'sc_sprawl_croc', pride:'
 const RARITY_ORDER = ['common','rare','epic','legendary'];
 // Set this to the real WRSTL web address when it is ready, e.g. 'https://www.wrstl.club' — the More screen button links there automatically.
 const WRSTL_URL = 'https://www.wrstl.club';
-const GAME_VERSION = '1.5';
+const GAME_VERSION = '1.6';
+// A test copy never reports to the player tracker and never installs itself as the app.
+const TEST_BUILD = false;
 // Player tracker: paste the Google Apps Script web app URL here (see wrstl-legends-tracker/Code.gs). Empty = tracking off.
 const TELEMETRY_URL = 'https://script.google.com/macros/s/AKfycbzLFe7BI0qjsFZ9Hcw-kLK8vr4MtuFJESgR4PpTaVuCfXO8t9LFJmWSm42nOzBu44_w/exec';
-const GAME_VER = '1.4';
+const GAME_VER = GAME_VERSION;   // was stuck on 1.4 while the game said 1.5
 
 // ===================== CORE =====================
 const app = document.getElementById('app');
@@ -828,7 +1007,8 @@ function freshSave(){
     gymWins:{}, stamps:{}, cards:{}, equip:[], kit:{owned:{clubSinglet:1}, eq:{singlet:'clubSinglet'}},
     loc:'hq', phoenix:false, rises:0, sound:true, bouts:0, wins:0, tut:false, seenMapTip:false,
     mis:{}, bossBeat:{}, quiz:{}, tees:{}, record:[], pack:{}, packOpps:{}, packBadge:false, streak:0, lastLoss:false, seenUnlock:{}, pid:'', careers:0, lastPing:0,
-    sp:'', spUses:0, path:0, drills:{}, pathDrills:{}};
+    sp:'', spUses:0, path:0, drills:{}, pathDrills:{},
+    helper:null, haptic:true, cold:0, bossWins:{}, day:{last:'', streak:0}, dc:null};
 }
 function loadSave(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===2) return Object.assign(freshSave(), s); }catch(e){}
@@ -844,6 +1024,7 @@ function startCareer(styleId){
   S.char = 'player'; S.style = styleId; S.careers = (S.careers||0)+1; S.lvl = 1; S.xp = 0; S.pts = 0; S.stats = {...c.stats}; S.trained = {};
   S.gymWins = {}; S.stamps = {}; S.loc = 'hq'; S.coins = Math.max(S.coins||0, 0);
   S.mis = {}; S.bossBeat = {}; S.quiz = {}; S.tees = {}; S.record = []; S.streak = 0; S.lastLoss = false; S.seenUnlock = {};
+  S.cold = 0; S.bossWins = {};
   S.sp = ''; S.spUses = 0;   // the special move is earned again on the way up
   S.path = 0; S.drills = {}; S.pathDrills = {};   // and so is the pathway, level 1 to 6
   if(!S.cards[c.move]) S.cards[c.move] = 1;
@@ -876,7 +1057,7 @@ function spendEnergy(n){ syncEnergy(); if(S.energy<n) return false; if(S.energy>
 // Sends a tiny anonymous ping (random id, level, stamps, bouts) to the owner's Google Sheet. No names, no emails.
 function platformName(){ const u=navigator.userAgent||''; return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':'desktop'; }
 function ping(reason){
-  if(!TELEMETRY_URL || !S.char) return;
+  if(TEST_BUILD || !TELEMETRY_URL || !S.char) return;
   const now = Date.now();
   if(reason==='open' && now-(S.lastPing||0) < 6*3600*1000) return; // at most one 'just opened' ping per 6 hours
   S.lastPing = now; save();
@@ -1043,7 +1224,7 @@ const isIOS = ()=> /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStr
 const canInstall = ()=> !isStandalone() && (!!deferredInstall || isIOS());
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall = e; if(screen==='more') render(); });
 window.addEventListener('appinstalled', ()=>{ deferredInstall = null; toast('🎉 Installed! Look for WRSTL Legends on your home screen.', 3500); if(screen==='more') render(); });
-if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+if(!TEST_BUILD && 'serviceWorker' in navigator && /^https?:/.test(location.protocol)){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('./sw.js').then(reg=>{
       reg.addEventListener('updatefound', ()=>{
@@ -1124,13 +1305,95 @@ document.addEventListener('click', e=>{
 const ACTIONS = {};
 ACTIONS.close = ()=>closeModal();
 
+
+// ===================== 1.6: FEEL — poses, impact, celebration, read-aloud =====================
+const reduceMotion = ()=>{ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } };
+function buzz(p){ try{ if(S.haptic!==false && navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+const fEl = who=>document.getElementById(who==='me'?'fMe':'fOp');
+// put a wrestler in a pose; with ms it springs back to the ready stance
+function pose(who, p, ms){
+  const f = fEl(who); if(!f) return;
+  clearTimeout(f._pt); f.classList.remove('tell'); f.dataset.pose = p;
+  if(ms) f._pt = setTimeout(()=>{ if(f.isConnected){ f.dataset.pose = 'ready'; } }, ms);
+}
+const MOVE_POSE = {SHOOT:'shoot', TIE:'tie', SPRAWL:'sprawl'};
+// the clue, acted out: the opponent holds the shape of what they look like doing
+function tellPose(m){ const f = fEl('op'); if(!f) return; clearTimeout(f._pt); f.dataset.pose = MOVE_POSE[m]||'ready'; f.classList.add('tell'); }
+function shake(big){ const b=document.querySelector('.bout'); if(!b || reduceMotion()) return; b.classList.remove('shk','shkbig'); void b.offsetWidth; b.classList.add(big?'shkbig':'shk'); }
+function flash(col){ const b=document.querySelector('.bout'); if(!b || reduceMotion()) return; const f=document.createElement('div'); f.className='flash'; f.style.background=col||'#fff'; b.appendChild(f); setTimeout(()=>f.remove(), 440); }
+const STAR_PTS = (()=>{ let p=[]; for(let i=0;i<24;i++){ const r=i%2?38:58, a=i/24*Math.PI*2; p.push((60+Math.cos(a)*r).toFixed(1)+','+(60+Math.sin(a)*r).toFixed(1)); } return p.join(' '); })();
+function impact(txt, col){
+  const mat=document.querySelector('.mat'); if(!mat) return;
+  const el=document.createElement('div'); el.className='impact';
+  el.innerHTML=`<svg viewBox="0 0 120 120"><polygon points="${STAR_PTS}" fill="${col}" stroke="#0b0a0d" stroke-width="4" stroke-linejoin="round"/></svg><b>${esc(txt)}</b>`;
+  mat.appendChild(el); setTimeout(()=>el.remove(), 860);
+}
+function confetti(n=60){
+  if(reduceMotion()) return;
+  const host=document.createElement('div'); host.className='confetti';
+  const cols=['#F27121','#f5c542','#39d17a','#3a86ff','#ff5fa2','#ffffff'];
+  let h='';
+  for(let i=0;i<n;i++) h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;background:${cols[i%cols.length]};--dx:${(Math.random()*160-80).toFixed(0)}px;--rot:${(Math.random()*1400-700).toFixed(0)}deg;animation-duration:${(1.6+Math.random()*1.6).toFixed(2)}s;animation-delay:${(Math.random()*.5).toFixed(2)}s"></i>`;
+  host.innerHTML=h; document.body.appendChild(host); setTimeout(()=>host.remove(), 4000);
+}
+function banner(txt){ const b=document.querySelector('.bout'); if(!b) return; const el=document.createElement('div'); el.className='banner'; el.textContent=txt; b.appendChild(el); setTimeout(()=>el.remove(), 1750); }
+// who scored, how many, with what — played out on the mat
+function choreo(scorer, pts, type){
+  const loser = scorer==='me' ? 'op' : 'me';
+  if(pts>=4){
+    pose(scorer,'lift',1000); pose(loser,'thrown',1900);
+    setTimeout(()=>{ shake(true); flash('#f5c542'); impact(pts+'!', '#f5c542'); buzz([30,40,110]); if(scorer==='me') confetti(28); }, 470);
+  } else if(pts>=2){
+    pose(scorer, type==='TIE'?'lock':'drive', 850);
+    setTimeout(()=>{ pose(loser,'down',1200); shake(false); impact('+'+pts, scorer==='me'?'#39d17a':'#ff8a7a'); buzz(45); }, 200);
+  } else {
+    pose(scorer,'lock',620);
+    setTimeout(()=>{ pose(loser,'back',760); buzz(20); }, 180);
+  }
+}
+
+// ---------- helper mode: reads the game out loud, picture hints, gentler timing ----------
+const helperOn = ()=>!!S.helper;
+let _voice;
+function pickVoice(){
+  try{ const vs = speechSynthesis.getVoices(); _voice = vs.find(v=>/en[-_]GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null; }catch(e){ _voice = null; }
+}
+try{ if('speechSynthesis' in window){ pickVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', pickVoice); } }catch(e){}
+function speak(t){
+  try{
+    if(!helperOn() || !S.sound || !('speechSynthesis' in window)) return;
+    const txt = String(t).replace(/<[^>]+>/g,' ').replace(/&amp;/g,'and').replace(/&[a-z]+;/g,' ').replace(/[^\p{L}\p{N}\s.,!?'’:;\-–—%+]/gu,' ').replace(/[–—]/g,', ').replace(/\s+/g,' ').trim();
+    if(!txt) return;
+    const u = new SpeechSynthesisUtterance(txt); u.lang='en-GB'; u.rate=.95; if(_voice) u.voice=_voice;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+function hush(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
+// picture hints: always in helper mode and the welcome session, and for a new wrestler's first few bouts at the home club
+function hintsOn(o){ return helperOn() || !!(B && B.tutorial) || (o.gym==='hq' && (S.bouts||0)<6); }
+// how much kinder the timing bar is: the home club is gentle for everyone, helper mode more so, and a losing run eases it a little
+function assist(o){
+  let w=1, s=1;
+  if(o.gym==='hq'){ w*=1.2; s*=.9; }
+  if(helperOn()){ w*=1.25; s*=.85; }
+  const cold = o.cold||0; if(cold){ w*=1+.1*cold; s*=1-.05*cold; }
+  return {w, s};
+}
+// ---------- form: a winning run brings tougher opponents and bigger rewards; a losing run eases off ----------
+const heatNow = ()=>clamp((S.streak||0)-2, 0, 10);
+const coldNow = ()=>clamp((S.cold||0)-1, 0, 2);
+// ---------- boss rematches: each win makes the next one harder, up to five stars ----------
+function bossTier(gid){ if(!S.bossBeat[gid] && !S.stamps[gid]) return 0; return clamp((S.bossWins||{})[gid]||1, 1, 5); }
+function starRow(gid){ const n = clamp(((S.bossWins||{})[gid]||0), 0, 5); if(n<2) return ''; return `<div class="stars" title="Boss beaten ${n} times">${'★'.repeat(n)}<i>${'★'.repeat(5-n)}</i></div>`; }
+
 // ===================== PASSPORT MISSIONS, COACH PHOENIX, QUIZZES =====================
 function coachImg(){ return IMG.coach || IMG.phoenix; }
 // Coach Phoenix speaks (a modal with the coach on the left)
 function coachModal(title, html, btn='OK', act='coachOk'){
-  return modal(`<div class="coachbox"><img src="${coachImg()}" alt="Coach Phoenix"><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><h2 style="font-size:20px">${title}</h2></div></div>
+  const m = modal(`<div class="coachbox"><img src="${coachImg()}" alt="Coach Phoenix"><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><h2 style="font-size:20px">${title}</h2></div></div>
     <div style="margin-top:10px">${html}</div>
     <button class="btn block" style="margin-top:12px" data-act="${act}">${btn}</button>`);
+  speak(title+'. '+html); return m;
 }
 function coachWait(title, html, btn){ coachModal(title, html, btn, 'coachOk'); return new Promise(res=>{ ACTIONS.coachOk = ()=>{ closeModal(); res(); }; }); }
 
@@ -1355,7 +1618,8 @@ function quizStep(){
   const opts = [{t:q.a[0],ok:true}, ...wrong.map(t=>({t,ok:false}))].sort(()=>Math.random()-.5);
   modal(`<div class="row"><div class="oav boss" style="border-color:var(--gold)"><img src="${IMG.tusk}" alt=""></div><div class="grow"><div class="small muted">${esc(set.title)} · Question ${i+1} of ${qs.length}</div><h3 style="font-size:15px">${esc(q.q)}</h3></div></div>
     ${i===0?`<p class="small muted" style="margin:8px 0 0">${esc(set.intro)}</p>`:''}
-    <div style="display:grid;gap:8px;margin-top:12px">${opts.map(o=>`<button class="btn ghost qopt" data-act="quizAns" data-ok="${o.ok?1:0}" style="text-align:left;justify-content:flex-start;font-family:var(--body);text-transform:none;letter-spacing:0;font-size:14px;line-height:1.3">${esc(o.t)}</button>`).join('')}</div>`);
+    <div style="display:grid;gap:8px;margin-top:12px">${opts.map((o,i)=>`<button class="btn ghost qopt" data-act="quizAns" data-ok="${o.ok?1:0}" style="text-align:left;justify-content:flex-start;font-family:var(--body);text-transform:none;letter-spacing:0;font-size:14px;line-height:1.3">${helperOn()?`<b class="qn">${i+1}</b>`:''}${esc(o.t)}</button>`).join('')}</div>`);
+  speak(q.q+'. '+opts.map((o,i)=>`${i+1}. ${o.t}`).join('. '));
 }
 ACTIONS.quizAns = (d, el)=>{
   if(!QZ || QZ.locked) return; QZ.locked = true;
@@ -1392,7 +1656,7 @@ function recordBout(o, win, how){
 }
 
 // ===================== SCREENS =====================
-RENDER.title = ()=>`<div class="title">
+RENDER.title = ()=>`${TEST_BUILD?'<div class="testtag">TEST COPY · '+GAME_VERSION+'</div>':''}<div class="title">
   <img class="hero" src="${IMG.squad_phx}" alt="WRSTL squad">
   <h1 style="margin-top:-6px">Legends</h1>
   <p class="muted" style="max-width:36ch;margin:0">Create your wrestler and follow the WRSTL pathway from your first club night in Glasgow all the way to the Games. Beat the squad, complete your missions, earn your stamps.</p>
@@ -1410,7 +1674,7 @@ ACTIONS.toSelect = ()=>{
   if(S.char){
     modal(`<h2>Start a new career?</h2><p>Your level, stats and passport stamps start again. You keep your move cards, kit, coins and anything you've unlocked.</p>
       <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="close">Cancel</button><button class="btn grow" data-act="confirmNew">Start again</button></div>`);
-  } else go('create', {draft:newDraft(), editing:false});
+  } else go('create', {draft:Object.assign(newDraft(), S.av||{}, {name:S.name||''}), editing:false});
 };
 ACTIONS.confirmNew = ()=>{ closeModal(); go('create', {draft:Object.assign(newDraft(), S.av||{}, {name:S.name, style:S.style}), editing:false}); };
 ACTIONS.editLook = ()=>go('create', {draft:Object.assign(newDraft(), S.av||{}, {name:S.name, style:S.style}), editing:true});
@@ -1424,7 +1688,8 @@ RENDER.create = ()=>{
       <button class="btn ghost" data-act="avRandom" style="padding:8px 12px" aria-label="Randomise">🎲</button></div>
     <div class="card" style="margin-top:12px">
       <div class="avprev" id="avprev"><img src="${avatarURI(prev)}" alt="Your wrestler"></div>
-      <div class="opt"><h3>Name</h3><input id="nameIn" class="namein" maxlength="14" placeholder="Your wrestling name" value="${esc(d.name)}" autocomplete="off"></div>
+      <div class="opt"><h3>Name</h3><div class="row"><input id="nameIn" class="namein grow" maxlength="14" placeholder="Your wrestling nickname" value="${esc(d.name)}" autocomplete="off"><button class="btn ghost" data-act="avName" style="padding:10px 12px" aria-label="Pick a name for me">🎲</button></div></div>
+      <button class="btn ghost block" data-act="avRandom" style="margin-top:12px;font-size:15px">🎲 Surprise me with a look</button>
       <div class="opt"><h3>Face</h3><div class="seg">
         <button class="${d.g==='m'?'on':''}" data-act="avSet" data-k="g" data-v="m">👦 Male</button>
         <button class="${d.g==='f'?'on':''}" data-act="avSet" data-k="g" data-v="f">👧 Female</button></div></div>
@@ -1433,28 +1698,33 @@ RENDER.create = ()=>{
       <div class="opt"><h3>Hair colour</h3><div class="sw">${HAIR_COLS.map(h=>`<button class="${d.hairCol===h.c?'on':''}" style="background:${h.c}" data-act="avSet" data-k="hairCol" data-v="${h.c}" aria-label="${h.n}"></button>`).join('')}</div></div>
       <div class="opt"><h3>Singlet colour</h3><div class="sw">${SINGLET_COLS.map(c=>`<button class="${d.singlet===c?'on':''}" style="background:${c}" data-act="avSet" data-k="singlet" data-v="${c}" aria-label="Singlet colour"></button>`).join('')}</div></div>
     </div>
-    ${UI.editing?'':`<div class="card" style="margin-top:12px"><h3>Wrestling style</h3><p class="small muted" style="margin:4px 0 8px">Sets your starting stats and first move card.</p>
-      <div class="styles">${PLAYER_STYLES.map(s=>`<button class="${d.style===s.id?'on':''}" data-act="avSet" data-k="style" data-v="${s.id}">
-        <div style="font-size:24px">${s.icon}</div><b class="disp" style="font-size:16px">${s.name}</b><div class="small muted">${s.desc}</div>
-        <div class="small" style="margin-top:4px">${esc(s.perk)}</div><div class="small" style="color:var(--gold)">Card: ${esc(CARDS[s.move].n)}</div></button>`).join('')}</div></div>`}
-    <button class="btn block" style="margin-top:14px" data-act="avDone">${UI.editing?'Save my look':'Start my career'}</button>
+    <div class="stickybar"><button class="btn block ${UI.editing?'':'nudge'}" data-act="avDone">${UI.editing?'Save my look':"Let's wrestle! ›"}</button></div>
   </div>`;
 };
 AFTER.create = ()=>{ const n=document.getElementById('nameIn'); if(n) n.addEventListener('input', ()=>{ UI.draft.name = n.value; }); };
 ACTIONS.avSet = d=>{ SFX.tap(); UI.draft[d.k] = d.v; const y=window.scrollY; render(); window.scrollTo(0,y); };
 ACTIONS.avRandom = ()=>{ const keep={name:UI.draft.name, style:UI.draft.style}; UI.draft = Object.assign(newDraft(), {singlet:pick(SINGLET_COLS), hairCol:pick(HAIR_COLS).c, hair:pick(HAIR_STYLES).id}, keep); SFX.rattle(); const y=window.scrollY; render(); window.scrollTo(0,y); };
-ACTIONS.avDone = ()=>{
-  const d = UI.draft; const nm = (d.name||'').replace(/[<>]/g,'').trim();
-  if(!nm){ toast('Give your wrestler a name first!'); const n=document.getElementById('nameIn'); if(n) n.focus(); return; }
+ACTIONS.avName = ()=>{ SFX.rattle(); UI.draft.name = pick(NICKNAMES.filter(n=>n!==UI.draft.name)); const n=document.getElementById('nameIn'); if(n) n.value = UI.draft.name; };
+ACTIONS.avDone = async ()=>{
+  if(UI.starting) return;
+  const d = UI.draft; let nm = (d.name||'').replace(/[<>]/g,'').trim();
+  if(!nm) nm = pick(NICKNAMES);            // a blank name never blocks the first bout — they can change it under Edit look
   S.name = nm; S.av = {g:d.g, skin:d.skin, hair:d.hair, hairCol:d.hairCol, singlet:d.singlet, brow:'calm'};
   if(UI.editing){ save(); SFX.good(); go('wrestler'); return; }
-  startCareer(d.style); SFX.good(); go('map');
-  if(!S.seenMapTip){ S.seenMapTip = true; save();
-    modal(`<div style="text-align:center"><img src="${avatar()}" style="height:120px;border-radius:18px" alt=""><h2>Welcome to the squad, ${esc(S.name)}!</h2>
-    <div class="coachbox" style="text-align:left;margin-top:10px"><img src="${coachImg()}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><div class="small">"I'm your coach. Every stop on the map has <b>missions</b> and a <b>boss</b> from the WRSTL squad. Do the missions, beat the boss, and I'll stamp your passport."</div></div></div>
-    <p class="small" style="margin-top:10px">You start at <b>${esc(GYMS[0].name)}</b> in ${esc(GYMS[0].city)}. Beat 3 wrestlers to face the boss. Each stamp unlocks the next stop on the pathway.</p>
-    <button class="btn block" data-act="openGymHQ">Let's go to the club</button></div>`);
-  }
+  UI.starting = true; save(); SFX.good();
+  try{
+    const firstEver = !S.char;
+    if(!S.tut) await welcomeSession();     // straight onto the mat with Honey
+    const style = await pickStyle(firstEver ? '' : d.style);
+    startCareer(style);
+    S.seenMapTip = true; save();
+    go('gym', {gym:'hq'});
+    if(firstEver){
+      await coachWait(`Welcome to the squad, ${esc(S.name)}!`, `<p>Here's your first <b>reward bag</b>. You get one every time you win.</p><p class="small muted">Do the missions, beat the boss, and I'll stamp your passport.</p>`, 'Open my bag');
+      await new Promise(res=>openBags(false, 1, res));
+      render();
+    }
+  } finally { UI.starting = false; }
 };
 ACTIONS.openGymHQ = ()=>{ closeModal(); go('gym', {gym:'hq'}); };
 ACTIONS.coachCheck = async ()=>{ const gid=UI.gym; if(await checkStamp(gid)) render(); };
@@ -1539,6 +1809,7 @@ RENDER.map = ()=>{
   });
   return hud() + `<div class="screen">
     <div class="mapbar"><img src="${IMG.logo_h}" alt="WRSTL" style="height:30px;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))"><span class="pill grow" style="justify-content:center;text-align:center">${next?`Next stamp: ${esc(next.name)}${S.lvl<next.lvl?` · Lv ${next.lvl}`:''}`:'All stamps earned! 🏆'}</span></div>
+    ${(()=>{ const c=dcToday(), f=dcDef(); return `<div class="mapbar" style="top:99px;margin-top:0;padding-top:0;background:none"><span class="pill grow" style="justify-content:center;text-align:center;border:1px dashed ${c.done?'var(--green)':'var(--gold)'}">${c.done?'✅':'🎯'} Today: ${esc(f.t)} · ${Math.min(c.p||0,f.n)}/${f.n}</span></div>`; })()}
     <div class="mapwrap"><svg id="map" viewBox="0 0 400 2800" role="img" aria-label="Map of the pathway from Glasgow to the Games">
       ${mapBackground()}
       <path id="route" d="${d}" fill="none" stroke="#0b0a0d" stroke-width="12" stroke-linecap="round" opacity=".7"/>
@@ -1558,7 +1829,7 @@ AFTER.map = ()=>{
   window.scrollTo(0, Math.max(0, cur.y*scale - window.innerHeight*.55));
   // catch-up: a player who was already past the Phoenix club before special moves
   // existed still gets to choose one, the next time they look at the map
-  if(specialOwed() && !document.querySelector('.modal')) offerSpecial();
+  mapArrive();
 };
 function nodeLen(path, g){
   if(!path._lens){ path._total = path.getTotalLength(); path._lens = {}; }
@@ -1598,7 +1869,8 @@ ACTIONS.node = async d=>{
 // ---------- gym ----------
 function makeOpp(g, idx){
   const boss = idx==='champ';
-  const L = boss ? g.lvl+(g.z===0?2:3) : (g.id==='hq' ? [1,1,2][idx] : g.lvl+idx);
+  const tier = boss ? bossTier(g.id) : 0;     // rematches: +2 levels for every time you have beaten them
+  const L = (boss ? g.lvl+(g.z===0?2:3) : (g.id==='hq' ? [1,1,2][idx] : g.lvl+idx)) + 2*tier;
   const bd = boss ? BOSSES[g.boss] : null;
   const style = boss ? bd.style : g.style;
   const st = STYLE_INFO[style];
@@ -1606,9 +1878,29 @@ function makeOpp(g, idx){
   const late = 1 + .12*lateRamp(g.id);      // the back half of the journey is stronger
   const stats = {};
   STATS.forEach(s=>{ let m = st.stat ? (s.k===st.stat?1.3:0.95) : 1.05; if(boss) m*=1.06; stats[s.k] = Math.round(base*m*late); });
-  if(boss) return {name:bd.name, img:bd.img, L, stats, style, champ:true, gym:g.id, idx, motto:bd.motto, role:bd.role, card:bd.card, power:bd.power, habit:bd.habit};
+  if(boss) return {name:bd.name, img:bd.img, L, tier, stats, style, champ:true, gym:g.id, idx, motto:bd.motto, role:bd.role, card:bd.card, power:bd.power, habit:bd.habit};
   const m = g.members[idx];
   return {name:m.name, nick:m.nick, from:m.from, av:m.av, blurb:m.blurb, captain:!!m.captain, L, stats, style, champ:false, gym:g.id, idx};
+}
+// 1.6: the club screen leads with ONE next step from Coach Phoenix and the
+// wrestlers to do it against; the missions and the small print sit below.
+function nextStep(g){
+  const wins = S.gymWins[g.id]||0, got = !!S.stamps[g.id], bd = BOSSES[g.boss], first = bd.name.split(' ')[0];
+  if(stampReady(g.id)) return {hi:'stamp', t:`Missions done and ${esc(first)} beaten. Come and get your stamp!`, btn:`<button class="btn gold block nudge" style="margin-top:8px" data-act="coachCheck">🐦‍🔥 Get my stamp</button>`};
+  if(got){
+    const i = gymIdx(g.id), nx = GYMS[i+1];
+    const card = `<button class="btn ghost grow" data-act="shareCard" style="font-size:14px;padding:10px 8px">📸 My card</button>`;
+    if(!nx) return {hi:'', t:'Every stamp earned. You are a WRSTL Legend!', btn:`<div class="row" style="margin-top:8px">${card}</div>`};
+    if(gymUnlocked(i+1)) return {hi:'', t:`Stamped! Next stop on the pathway: <b>${esc(nx.name)}</b>.`, btn:`<div class="row" style="margin-top:8px">${card}<button class="btn grow nudge" data-go="map" style="font-size:14px;padding:10px 8px">🗺️ To the map</button></div>`};
+    return {hi:'', t:`Stamped! <b>${esc(nx.name)}</b> opens at <b>level ${nx.lvl}</b> — keep wrestling and training here.`, btn:`<div class="row" style="margin-top:8px">${card}</div>`};
+  }
+  if(!S.bossBeat[g.id] && wins<3) return {hi:'wrestle', t: wins===0 && !S.bouts ? `Pick a wrestler and have your first proper bout. Beat <b>3</b> and you face <b>${esc(first)}</b>.` : `Beat <b>${3-wins}</b> more wrestler${3-wins===1?'':'s'} to face <b>${esc(first)}</b>.`, btn:''};
+  if(!S.bossBeat[g.id]) return {hi:'boss', t:`You're ready. Challenge <b>${esc(bd.name)}</b>!`, btn:''};
+  const left = misDef(g.id).filter(m=>!misDone(g.id,m)), m = left[0];
+  if(!m) return {hi:'', t:'Nearly there.', btn:''};
+  const quiz = m.k.startsWith('quiz_');
+  return {hi: quiz?'quiz':'mission', t:`${esc(first)} is beaten. ${left.length>1?'Two jobs':'One job'} left for your stamp: <b>${esc(m.t)}</b>.`,
+    btn: quiz ? `<button class="btn block nudge" style="margin-top:8px" data-act="quiz" data-q="${m.k.slice(5)}">🐘 Take Tusk's test</button>` : ''};
 }
 RENDER.gym = ()=>{
   const g = GYMS[gymIdx(UI.gym)], wins = S.gymWins[g.id]||0, got = !!S.stamps[g.id];
@@ -1616,34 +1908,38 @@ RENDER.gym = ()=>{
   const members = [0,1,2].map(i=>makeOpp(g,i));
   const boss = makeOpp(g,'champ');
   const bst = STYLE_INFO[boss.style];
+  const ns = nextStep(g), nudgeIdx = Math.min(wins, 2), heat = heatNow();
+  const beaten = !!(S.bossBeat[g.id] || got), nb = clamp((S.bossWins||{})[g.id]||0, 0, 5);
   return hud() + `<div class="screen">
-    <button class="btn ghost" data-go="map" style="padding:8px 12px;margin-bottom:10px">← Map</button>
-    <div class="gymhead"><span class="big">${g.icon}</span>
+    <div class="row" style="margin-bottom:10px"><button class="btn ghost" data-go="map" style="padding:8px 12px">← Map</button><span class="grow"></span>${heat?`<span class="pill" style="background:rgba(229,72,63,.25);border:1px solid var(--red)">🔥 ${S.streak} wins in a row</span>`:''}</div>
+    <div class="gymhead compact"><span class="big">${g.icon}</span>
       <div class="small muted">${esc(g.city)} · ${esc(ZONES[g.z].n)}</div>
       <h2 style="max-width:80%">${esc(g.name)}</h2>
       <div class="small" style="color:var(--orange2);font-weight:800">${esc(g.stage||'')}</div>
-      <p style="margin:6px 0 8px;max-width:85%">${esc(g.blurb)}</p>
+      <p class="small muted" style="margin:6px 0 8px;max-width:88%">${esc(g.blurb)}</p>
       <span class="pill">Level ${g.lvl}</span> ${got?'<span class="stampmark">STAMPED</span>':''}
     </div>
-    <div class="card" style="margin-top:12px;padding:12px">
-      <div class="row"><h3 class="grow">📘 Passport missions</h3><span class="small muted">${got?'Stamped':`${misDef(g.id).filter(m=>misDone(g.id,m)).length + (S.bossBeat[g.id]?1:0)} / ${misDef(g.id).length+1}`}</span></div>
-      ${missionList(g.id)}
-      <div class="mis ${S.bossBeat[g.id]?'done':''}"><span class="mi">${S.bossBeat[g.id]?'✅':'👑'}</span><div class="grow"><b>Beat ${esc(BOSSES[g.boss].name)}</b><div class="small muted">Beat 3 wrestlers here first</div></div></div>
-      ${stampReady(g.id)?`<button class="btn gold block" style="margin-top:8px" data-act="coachCheck">🐦‍🔥 Ask Coach Phoenix for your stamp</button>`:got?'':`<p class="small muted" style="margin:8px 0 0">Coach Phoenix stamps your passport when the missions and the boss are done.</p>`}
-    </div>
-    <div class="row" style="margin-top:14px"><h3 class="grow">Wrestlers</h3><span class="small muted">Beat 3 to face the boss</span></div>
-    ${members.map(o=>`<div class="opp">${oppAvatar(o)}<div class="grow"><b>${esc(o.name)}</b>${o.captain?`<div class="nick">🎖️ Gym Captain</div>`:`<div class="nick">"${esc(o.nick)}"</div>`}<div class="small muted">Lv ${o.L} · ${esc(o.from)} · ${STYLE_INFO[o.style].n}</div></div>
-      <button class="btn" data-act="bout" data-idx="${o.idx}" style="padding:9px 12px;font-size:15px;flex-direction:column;gap:0">Wrestle<small style="font-size:10px">⚡3</small></button></div>`).join('')}
+    <div class="coachbox nextstep"><img src="${coachImg()}" alt="Coach Phoenix"><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX · NEXT</div><div class="say">${ns.t}</div>${ns.btn||''}</div></div>
+    ${dcRow()}
+    <div class="row" style="margin-top:14px"><h3 class="grow">Wrestlers</h3><span class="small muted">${beaten?'Wrestle any time':'Beat 3 to face the boss'}</span></div>
+    ${members.map(o=>`<div class="opp">${oppAvatar(o)}<div class="grow"><b>${esc(o.name)}</b>${o.captain?`<div class="nick">🎖️ Gym Captain</div>`:`<div class="nick">"${esc(o.nick)}"</div>`}<div class="small muted">Lv ${o.L} · ${STYLE_INFO[o.style].n}</div></div>
+      <button class="btn ${ns.hi==='wrestle'&&o.idx===nudgeIdx?'nudge':''}" data-act="bout" data-idx="${o.idx}" style="padding:9px 12px;font-size:15px;flex-direction:column;gap:0">Wrestle<small style="font-size:10px">⚡3</small></button></div>`).join('')}
     <div class="champ ${champOpen?'':'locked'}"><div class="row">${oppAvatar(boss)}<div class="grow">
       <div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">GYM BOSS · ${esc(boss.role.toUpperCase())}</div>
-      <h3>${esc(boss.name)}</h3><div class="small muted">Level ${boss.L} · ${bst.n}</div>
+      <h3>${esc(boss.name)}</h3><div class="small muted">Level ${boss.L} · ${bst.n}${beaten?` · <span class="stars">${'★'.repeat(nb)}<i>${'★'.repeat(5-nb)}</i></span>`:''}</div>
       <div class="small motto" style="margin:4px 0">"${esc(boss.motto)}"</div>
-      <div class="small"><b style="color:var(--gold)">Superpower:</b> ${esc(boss.power||'')} · <b>Big move:</b> ${esc(CARDS[boss.card].n)}</div>
       <div class="small muted">${esc((boss.habit||{}).t||'')}</div>
-      <div class="pips" style="margin-top:4px">${[0,1,2].map(i=>`<i class="${wins>i||got?'on':''}"></i>`).join('')}</div></div></div>
-      <div class="small" style="margin-top:8px">Win to earn: <b>${esc(CARDS[boss.card].i+' '+CARDS[boss.card].n)}</b> card + champion bag${g.id==='south'?' · Pride will run her visualisation with you first':''}</div>
-      <button class="btn gold block" style="margin-top:10px" data-act="bout" data-idx="champ" ${champOpen?'':'disabled'}>${got?'Rematch':'Challenge the boss'} · ⚡5</button>
+      ${beaten?'':`<div class="pips" style="margin-top:4px">${[0,1,2].map(i=>`<i class="${wins>i?'on':''}"></i>`).join('')}</div>`}</div></div>
+      <div class="small" style="margin-top:8px">${beaten ? (nb>=5 ? 'Five stars — you have mastered this boss. Rematch any time for a champion bag.' : `Rematch: ${esc(boss.name.split(' ')[0])} comes back stronger every time you win. Beat them for a champion bag and another star.`)
+        : `Win to earn: <b>${esc(CARDS[boss.card].i+' '+CARDS[boss.card].n)}</b> card + champion bag${g.id==='south'?' · Pride will run her visualisation with you first':''}`}</div>
+      <button class="btn gold block ${ns.hi==='boss'?'nudge':''}" style="margin-top:10px" data-act="bout" data-idx="champ" ${champOpen?'':'disabled'}>${beaten?`Rematch · Lv ${boss.L}`:'Challenge the boss'} · ⚡5</button>
       ${champOpen?'':`<div class="hint" style="margin-top:6px">Win ${3-wins} more bout${3-wins===1?'':'s'} here to unlock</div>`}
+    </div>
+    <div class="card" style="margin-top:14px;padding:12px">
+      <div class="row"><h3 class="grow">📘 Passport missions</h3><span class="small muted">${got?'Stamped':`${misDef(g.id).filter(m=>misDone(g.id,m)).length + (S.bossBeat[g.id]?1:0)} / ${misDef(g.id).length+1}`}</span></div>
+      ${missionList(g.id)}
+      <div class="mis ${S.bossBeat[g.id]?'done':''}" style="margin-top:6px"><span class="mi">${S.bossBeat[g.id]?'✅':'👑'}</span><div class="grow"><b>Beat ${esc(BOSSES[g.boss].name)}</b>${S.bossBeat[g.id]?'':'<div class="small muted">Beat 3 wrestlers here first</div>'}</div></div>
+      ${got?'':`<p class="small muted" style="margin:8px 0 0">Coach Phoenix stamps your passport when the missions and the boss are done.</p>`}
     </div>
     <div class="row" style="margin-top:16px;gap:8px">
       <button class="btn ghost grow" data-act="drill">🏋️ Train · ⚡2</button>
@@ -1721,8 +2017,9 @@ RENDER.passport = ()=>`${hud()}<div class="screen">
       <div class="small" style="letter-spacing:2px;font-weight:900;color:#7a3310">MY PATHWAY PASSPORT</div>
       <h2 style="color:#2a1c10">${esc(S.name)}</h2><div class="small">Level ${S.lvl} · ${Object.keys(S.stamps).length}/${GYMS.length} stamps${S.phoenix?' · 🔥 WRSTL Legend':''}</div></div></div>
     ${pathwayCard()}
+    <button class="btn block" data-act="shareCard" style="margin-top:12px">📸 Make my wrestler card</button>
     ${ZONES.map((z,zi)=>`<div style="margin-top:18px"><h3>${z.sub}</h3><div class="stamps">${GYMS.filter(g=>g.z===zi).map(g=>{ const d=S.stamps[g.id]; const done=misDef(g.id).filter(m=>misDone(g.id,m)).length+(S.bossBeat[g.id]?1:0), tot=misDef(g.id).length+1;
-      return d ? `<div class="stamp got"><div><img src="${IMG[BOSSES[g.boss].img]}" style="height:46px" alt=""><div>${esc(g.name)}</div><div style="font-size:10px">${esc(d)}</div></div></div>`
+      return d ? `<div class="stamp got"><div><img src="${IMG[BOSSES[g.boss].img]}" style="height:46px" alt=""><div>${esc(g.name)}</div><div style="font-size:10px">${esc(d)}</div>${starRow(g.id)}</div></div>`
                : `<div class="stamp"><div><div class="e" style="opacity:.4">${g.icon}</div><div>${esc(g.name)}</div><div style="font-size:10px">${done?`Missions ${done}/${tot}`:'Level '+g.lvl}</div></div></div>`;}).join('')}</div></div>`).join('')}
     <div style="margin-top:18px"><h3>My level T-shirts</h3><div class="tees">${Object.keys(BOSSES).map(b=>`<div class="tee ${S.tees[b]?'':'off'}" style="background:${S.tees[b]?teeCol(b):'#cbbda0'}">👕 ${esc(BOSSES[b].name.split(' ')[0])}</div>`).join('')}</div></div>
     <div style="margin-top:18px"><div class="row"><h3 class="grow">🐾 Pride's Pack</h3>${S.packBadge?'<span class="stampmark">PACK BADGE</span>':''}</div>
@@ -1776,6 +2073,8 @@ RENDER.more = ()=>`${hud()}<div class="screen">
   <div class="card" style="margin-top:12px">${howToScore()}</div>
   <div class="card" style="margin-top:12px;display:grid;gap:10px">
     <button class="btn ghost" data-act="toggleSound">${S.sound?'🔊 Sound on':'🔇 Sound off'}</button>
+    <button class="btn ghost" data-act="toggleHelper" style="flex-direction:column;gap:2px">${S.helper?'🧒 Helper mode on':'🧒 Helper mode off'}<small style="font:700 11.5px var(--body);text-transform:none;letter-spacing:0;color:var(--muted)">Reads the game out loud · picture hints · easier timing</small></button>
+    ${navigator.vibrate?`<button class="btn ghost" data-act="toggleHaptic">${S.haptic!==false?'📳 Vibration on':'📴 Vibration off'}</button>`:''}
     <button class="btn ghost" data-act="toSelect">🔁 New career</button>
     <button class="btn ghost" data-act="resetAll" style="color:#ff8a7a">Delete all progress</button>
   </div>
@@ -1801,6 +2100,7 @@ function howToPlay(){ return `<h3>How a bout works</h3>
     <li><b>Time it.</b> Tap when the marker is in the green. Hit the gold for a big score!</li>
   </ol>
   <p class="small muted" style="margin:0">Win your pick and you attack. Lose it and you must defend. Same pick means a scramble. Don't be predictable: opponents notice if you repeat the same move.</p>
+  <p class="small muted" style="margin:6px 0 0">🔥 Win 3 in a row and your opponents raise their game — and so do your XP and coins. Beaten bosses come back stronger every rematch.</p>
   <p class="small muted" style="margin:6px 0 0">New skills unlock as you earn stamps: ${UNLOCKS.map(u=>`<b>${esc(u.by)}'s lesson</b> (${unlocked(u.k)?'unlocked':'after '+esc(GYMS[gymIdx(u.after)].name)})`).join(' · ')}.</p>`; }
 // ---------- hidden owner dashboard: tap the small wordmark at the bottom of More 5 times ----------
 let ownerTaps = [];
@@ -1853,7 +2153,9 @@ ACTIONS.installApp = async ()=>{
     <p class="small muted" style="margin-top:8px">It has to be Safari — Chrome on iPhone can't add apps to the home screen.</p>
     <button class="btn block" style="margin-top:10px" data-act="close">Got it</button></div>`);
 };
-ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; if(!S.sound) crowdStop(); save(); render(); if(S.sound) SFX.good(); };
+ACTIONS.toggleSound = ()=>{ S.sound=!S.sound; if(!S.sound){ crowdStop(); hush(); } save(); render(); if(S.sound) SFX.good(); };
+ACTIONS.toggleHelper = ()=>{ S.helper = !S.helper; save(); render(); SFX.good(); if(S.helper) speak('Helper mode is on. I will read the game out loud.'); else hush(); };
+ACTIONS.toggleHaptic = ()=>{ S.haptic = S.haptic===false; save(); render(); buzz(40); };
 ACTIONS.resetAll = ()=>modal(`<h2>Delete everything?</h2><p>This removes your career, cards, kit and unlocks from this device. It can't be undone.</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="close">Keep it</button><button class="btn grow" data-act="confirmReset" style="background:var(--red)">Delete</button></div>`);
 ACTIONS.confirmReset = ()=>{ closeModal(); S = freshSave(); save(); go('title'); };
@@ -1886,7 +2188,9 @@ document.addEventListener('keydown', e=>{
   else if(KEYMAP[e.key] && UI.choose){ UI.choose(KEYMAP[e.key]); }
 });
 
-ACTIONS.bout = d=>{
+ACTIONS.bout = async d=>{
+  // anyone who has never wrestled gets Honey's welcome session first — no energy spent
+  if(!S.tut){ if(UI.starting) return; UI.starting = true; try{ await welcomeSession(); } finally { UI.starting = false; } go('gym', {gym:UI.gym}); return; }
   const g = GYMS[gymIdx(UI.gym)];
   const idx = d.idx==='champ' ? 'champ' : +d.idx;
   const cost = idx==='champ' ? 5 : 3;
@@ -1918,6 +2222,9 @@ function crowdSize(opp){
   return clamp([.28,.5,.75,1][g.z] + (opp.champ?.12:0), .2, 1);
 }
 function startBout(opp){
+  // form: on a winning run the opponent raises their game (and the rewards go up); after a couple of losses they ease off
+  opp.heat = heatNow(); opp.cold = opp.heat ? 0 : coldNow();
+  { const m = (1 + .05*opp.heat) * (1 - .06*opp.cold); if(m!==1) STATS.forEach(s=>{ opp.stats[s.k] = Math.round(opp.stats[s.k]*m*10)/10; }); }
   B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false, shield:false, big4:false};
   if(S.lastLoss) pack('backOnMat');
   screen = 'bout'; UI.tap = null; UI.choose = null;
@@ -1931,14 +2238,14 @@ function boutShell(){
     <div class="score">
       <div class="sc me"><div class="pts" id="myPts">0</div><div class="nm">${esc(S.name)}<div class="small muted">Lv ${S.lvl}</div></div></div>
       <div><div class="clock" id="clock">PERIOD 1</div><div class="expips" id="pips"></div></div>
-      <div class="sc op"><div class="pts" id="opPts">0</div><div class="nm">${esc(o.name)}<div class="small muted">Lv ${o.L}${o.champ?' · Boss':''}</div></div></div>
+      <div class="sc op"><div class="pts" id="opPts">0</div><div class="nm">${esc(o.img?shortName(o.name):o.name)}<div class="small muted">${o.welcome?'Coach':`Lv ${o.L}${o.champ?' · Boss':''}`}</div></div></div>
     </div>
     <div class="mat">
       <div class="circle"></div>
       ${o.img==='tusk'?'':`<div class="tusk"><img src="${IMG.tusk}" alt="Tusk the referee"></div>`}
       <div class="bubble" id="bubble"></div>
-      <div class="fighter me" id="fMe"><div class="emo mine"><img src="${avatar()}" alt=""></div></div>
-      <div class="fighter op" id="fOp">${o.img?`<img src="${IMG[o.img]}" alt="">`:`<div class="emo"><img src="${avatarURI(o.av)}" alt=""></div>`}</div>
+      ${fighterHTML('me', playerAv())}
+      ${fighterHTML('op', o.av, o.img?IMG[o.img]:null)}
       <div class="shout" id="shout"></div>
     </div>
     <div class="stage" id="stage"></div>
@@ -1959,9 +2266,9 @@ function floatPts(who, txt, col){
   const f = document.createElement('div'); f.className='float'; f.textContent=txt; f.style.color=col;
   f.style.left = who==='me' ? '22%' : '62%'; f.style.top = '40px'; mat.appendChild(f); setTimeout(()=>f.remove(), 1300);
 }
-function lunge(who){ const f=$id(who==='me'?'fMe':'fOp'); if(!f) return; f.classList.add('lunge'); setTimeout(()=>f.classList.remove('lunge'), 450); }
+function lunge(who){ pose(who,'drive',480); }
 function hit(who){ const f=$id(who==='me'?'fMe':'fOp'); if(!f) return; f.classList.remove('hit'); void f.offsetWidth; f.classList.add('hit'); }
-function updScore(){ $id('myPts').textContent=B.my; $id('opPts').textContent=B.op; }
+function updScore(){ [['myPts',B.my],['opPts',B.op]].forEach(([id,v])=>{ const e=$id(id); if(!e) return; if(e.textContent!==String(v)){ e.textContent=v; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } }); }
 function waitAct(){ return new Promise(res=>{ UI.resolveAct = v=>{ UI.resolveAct=null; res(v); }; }); }
 ACTIONS.boutGo = ()=>UI.resolveAct && UI.resolveAct(true);
 
@@ -2002,11 +2309,14 @@ async function runBout(){
   stage(`<div class="panel" style="text-align:center">
     <div class="small muted">${o.champ?'BOSS BOUT':'BOUT'} · ${esc(GYMS[gymIdx(o.gym)].name)}</div>
     <h2 style="margin:4px 0">${esc(S.name)} <span style="color:var(--orange)">vs</span> ${esc(o.name)}</h2>
-    ${o.champ?`<img src="${IMG[BOSS_SCENE[GYMS[gymIdx(o.gym)].boss]]||IMG.mv_handfight}" alt="" class="scene" style="max-height:150px;margin:4px 0"><div class="motto">"${esc(o.motto)}"</div><div class="small"><b style="color:var(--gold)">Superpower:</b> ${esc(o.power||'')}</div><div class="small muted">${esc((o.habit||{}).t||'')}</div>${o.viz?'<div class="small" style="color:var(--green)">🧘 Visualised — read +8% this bout</div>':''}`:`<div class="nick" style="font-size:15px">${o.captain?'🎖️ Gym Captain':'"'+esc(o.nick)+'"'} · ${esc(o.from)}</div><div class="small muted">${esc(o.blurb)}</div>`}
+    ${o.champ?`<img src="${IMG[BOSS_SCENE[GYMS[gymIdx(o.gym)].boss]]||IMG.mv_handfight}" alt="" class="scene" style="max-height:96px;margin:4px 0"><div class="motto">"${esc(o.motto)}"</div><div class="small"><b style="color:var(--gold)">Superpower:</b> ${esc(o.power||'')}</div><div class="small muted">${esc((o.habit||{}).t||'')}</div>${o.viz?'<div class="small" style="color:var(--green)">🧘 Visualised — read +8% this bout</div>':''}`:`<div class="nick" style="font-size:15px">${o.captain?'🎖️ Gym Captain':'"'+esc(o.nick)+'"'} · ${esc(o.from)}</div><div class="small muted">${esc(o.blurb)}</div>`}
     <p class="small muted" style="margin:0 0 10px">${STYLE_INFO[o.style].n} like to ${o.style==='speed'?'shoot fast':o.style==='strength'?'tie up and throw':o.style==='technique'?'wait and counter':'mix it up'}.</p>
     <div class="row" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:12px">${cardsEquipped().map(e=>`<span class="pill r-${e.c.r}" style="border:1px solid var(--rc)">${e.c.i} ${esc(e.c.n)} Lv${e.l}</span>`).join('')||'<span class="small muted">No move cards equipped</span>'}</div>
+    ${o.heat?`<div class="heatline">🔥 ${S.streak} wins in a row — ${esc(shortName(o.name))} has raised their game. Win for +${o.heat*10}% XP and coins.</div>`:''}
     <button class="btn block" data-act="boutGo">🤝 Shake hands</button></div>`);
+  speak(`${S.name} against ${o.name}. Tap shake hands.`);
   await waitAct();
+  pose('me','shake',650); pose('op','shake',650); buzz(15); await sleep(460);
   SFX.crowdSet(crowdSize(o));
   SFX.whistleStart(); say('Wrestle!');
   if(!S.tut){
@@ -2038,17 +2348,23 @@ async function exchange(){
   const pRead = clamp(.55 + .03*(statOf('tec')-o.stats.tec*oppMul()) + readBonus() + (o.viz?.08:0) - (hb==='calm'?.12:hb==='all'?.08:0) - .06*ramp, .3, .93);
   const honest = Math.random()<pRead;
   const tellMove = honest ? plan : pick(Object.keys(MOVES).filter(k=>k!==plan));
+  const tellTxt = pick(TELLS[tellMove]), hintOn = hintsOn(o);
+  const beatK = Object.keys(MOVES).find(k=>MOVES[k].beats===tellMove);   // what beats the thing they look like doing
+  pose('me','ready'); tellPose(tellMove);                                 // the clue, acted out on the mat
   stage(`<div class="panel">
     <div class="small muted">Exchange ${B.ex+1}${B.ex>=6?' · sudden victory':''} · Read the clue</div>
-    <div class="tell">${esc(shortName(o.name))} <b>${esc(pick(TELLS[tellMove]))}</b>…</div>
+    <div class="tell">${esc(shortName(o.name))} <b>${esc(tellTxt)}</b>…</div>
+    ${hintOn?`<div class="hintchip m-${tellMove}">👀 Looks like a <b>${MOVES[tellMove].i} ${MOVES[tellMove].n}</b></div>`:''}
     <div class="row small" style="margin-top:6px"><span class="muted">Your read</span><div class="readbar grow"><i style="width:${Math.round(pRead*100)}%"></i></div><b>${Math.round(pRead*100)}%</b></div>
   </div>
-  <div class="choices">${Object.keys(MOVES).map((k,i)=>`<button class="choice" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats ${MOVES[MOVES[k].beats].n}</small></button>`).join('')}</div>
+  <div class="choices">${Object.keys(MOVES).map((k,i)=>`<button class="choice m-${k} ${helperOn()&&k===beatK?'glow':''}" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats <span class="m-${MOVES[k].beats}">${MOVES[MOVES[k].beats].i} ${MOVES[MOVES[k].beats].n}</span></small></button>`).join('')}</div>
   ${specialButton()}
   <div class="hint kbd">Keys 1 · 2 · 3</div>`);
+  speak(`${shortName(o.name)} ${tellTxt}. ${hintOn?`Looks like a ${MOVES[tellMove].n}. ${MOVES[beatK].n} beats ${MOVES[tellMove].n}.`:''}`);
   const choice = await new Promise(res=>{ UI.choose = m=>{ UI.choose=null; res(m); }; ACTIONS.choose = d=>UI.choose && UI.choose(d.m); });
   if(choice==='SPECIAL'){ await specialExchange(shielded); return; }
   SFX.tap(); SFX.grapple(); B.hist.push(choice);
+  pose('me', MOVE_POSE[choice]); pose('op', MOVE_POSE[plan]);
   const res = choice===plan ? 'scramble' : MOVES[choice].beats===plan ? 'attack' : 'defend';
   const hh = B.hist.length;
   if((unlocked('passivity') || hb==='rulebook') && hh>=3 && B.hist[hh-1]==='SPRAWL' && B.hist[hh-2]==='SPRAWL' && B.hist[hh-3]==='SPRAWL'){
@@ -2059,6 +2375,7 @@ async function exchange(){
       <div class="rv me"><b>${MOVES[choice].i}</b>You: ${MOVES[choice].n}</div><div class="disp" style="font-size:20px">VS</div>
       <div class="rv op"><b>${MOVES[plan].i}</b>${esc(shortName(o.name))}: ${MOVES[plan].n}</div></div>
     <div class="verdict ${res==='attack'?'good':res==='defend'?'bad':'mid'}">${res==='attack'?'You got the jump! ATTACK!':res==='defend'?'They got the jump! DEFEND!':'Same move — SCRAMBLE!'}</div></div>`);
+  speak(res==='attack'?'You got the jump! Attack! Tap in the green.':res==='defend'?'They got the jump! Defend! Tap in the green.':'Same move. Scramble! Tap in the green.');
   await sleep(1150);
 
   // meter setup
@@ -2077,13 +2394,14 @@ async function exchange(){
   // tap window past what a person can hit. They send stronger opponents instead,
   // and the zone narrows through the stat ratio above, so building your wrestler
   // is what answers the difficulty.
-  w = clamp(w, .05, .5);
+  const A = assist(o);
+  w = clamp(w*A.w, .05, .5);
   const tecR = clamp(statOf('tec')/Math.max(1,o.stats.tec), .5, 2.2);
   const pf = clamp((.26*Math.pow(tecR,.6) + (res==='attack'?cardPerf(type):0)) * (1 - .15*ramp), .1, .6);
   const conR = clamp(statOf('con')/Math.max(1,o.stats.con), .6, 1.8);
   const fat = 1 + .07*Math.min(B.ex,7)*(c.perks.fatigue||1)*(hb==='tireless'?1.5:1);
-  const speed = (0.85 + .01*o.L) * fat / Math.pow(conR,.5) * (1 + .12*ramp);
-  const q = await runMeter({w, pf, speed, label, comeback, time:4200 - 600*ramp});
+  const speed = (0.85 + .01*o.L) * fat / Math.pow(conR,.5) * (1 + .12*ramp) * A.s * (1 + .03*(o.heat||0));
+  const q = await runMeter({w, pf, speed, label, comeback, time:(4200 - 600*ramp)*(helperOn()?1.5:1)});
 
   // outcome
   let myP=0, opP=0, text='', kind='mid';
@@ -2093,22 +2411,22 @@ async function exchange(){
     if(q==='perfect'){ B.big4 = true; myP = big?5:4; text = big ? `${big.c.n}! BIG THROW — 4 points!` : {SHOOT:'Lifted and dumped to their back — 4 points!',TIE:'Big throw — 4 points!',SPRAWL:'Sprawl, spin and turn — 4 points!'}[type]; kind='good'; }
     else if(q==='good'){ myP=2; text={SHOOT:'Takedown — 2 points!',TIE:'Snap down, go behind — 2 points!',SPRAWL:'Sprawl and go behind — 2 points!'}[type]; kind='good'; }
     else { if(Math.random()<(hb==='counter'?.45:.25)){ opP=2; text={SHOOT:`${n1} sprawls and spins behind — 2 to them.`,TIE:`${n1} counters your throw — 2 to them.`,SPRAWL:`${n1} gets behind you — 2 to them.`}[type]; } else text={SHOOT:`${n1} stuffed your shot.`,TIE:`${n1} broke your grip.`,SPRAWL:`${n1} got away.`}[type]; kind='bad'; }
-    if(myP>0 && type==='SHOOT') mission('scoreShoot'); if(myP>0 && type==='TIE') mission('scoreTie');
+    if(myP>0 && type==='SHOOT'){ mission('scoreShoot'); daily('shoot'); } if(myP>0 && type==='TIE'){ mission('scoreTie'); daily('tie'); }
   } else if(res==='defend'){
-    if(q==='perfect'){ myP=2; text='Great defence — you go behind for 2!'; kind='good'; mission('perfectDef'); }
-    else if(q==='good'){ text='Stuffed it! No score.'; kind='mid'; }
+    if(q==='perfect'){ myP=2; text='Great defence — you go behind for 2!'; kind='good'; mission('perfectDef'); daily('def'); }
+    else if(q==='good'){ text='Stuffed it! No score.'; kind='mid'; daily('def'); }
     else { opP = Math.random() < .13+.004*o.L ? 4 : 2; text = opP===4?`${n1} hits a big throw — 4 points.`:`${n1} scores a takedown — 2 points.`; kind='bad'; }
   } else {
     if(q==='perfect'){ myP=2; text='You win the scramble — go behind for 2!'; kind='good'; }
     else if(q==='good'){ myP=1; text='Step out! 1 point.'; kind='good'; }
     else { opP=1; text=`${n1} wins the scramble — step out, 1 point.`; kind='bad'; }
   }
-  if(q==='perfect') mission('perfect');
+  if(q==='perfect'){ mission('perfect'); daily('gold'); }
   if(q==='miss') B.missed = true;
   let follow = '';
   // Grey's lesson: after a takedown, SETTLE or USE IT (turn for +2, miss = escape for 1)
   if(res==='attack' && myP>0 && unlocked('turns')){
-    lunge('me'); hit('op'); B.my+=myP; B.last='me'; updScore(); floatPts('me','+'+myP, myP>=4?'#f5c542':'#39d17a'); (myP>=4?SFX.perfect:SFX.good)();
+    choreo('me', myP, type); B.my+=myP; B.last='me'; updScore(); floatPts('me','+'+myP, myP>=4?'#f5c542':'#39d17a'); (myP>=4?SFX.perfect:SFX.good)();
     if(myP>=4) mission('big4');
     const base = myP; myP = 0;
     stage(`<div class="panel" style="text-align:center"><div class="verdict good" style="font-size:22px">${esc(text)}</div>
@@ -2125,7 +2443,7 @@ async function exchange(){
     text = `Takedown +${base}`; kind = 'good';
   } else if(myP>0){ const fl = cardFollow(); if(fl && Math.random()<fl.p){ myP+=2; follow = `${fl.n} — roll! +2`; } }
   if(myP>=4 && res==='attack'){ const bg = cardBig(type); const art = (bg && MOVE_ART[bg.k]) || {SHOOT:'mv_doubleleg', TIE:'mv_throw'}[type]; if(art) await moveSplash(art, bg ? bg.c.n : (type==='SHOOT'?'Big double leg!':'Huge throw!')); }
-  if(myP>0){ lunge('me'); hit('op'); B.my+=myP; B.last='me'; floatPts('me', '+'+myP, myP>=4?'#f5c542':'#39d17a');
+  if(myP>0){ choreo('me', myP, res==='attack'?type:'SPRAWL'); B.my+=myP; B.last='me'; floatPts('me', '+'+myP, myP>=4?'#f5c542':'#39d17a');
     if(myP>=4){ SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); }
     else if(myP>=2){ SFX.thud(); setTimeout(()=>SFX.good(), 70); SFX.cheer(.55); }
     else { SFX.slap(); SFX.cheer(.3); }
@@ -2135,10 +2453,10 @@ async function exchange(){
   if(shielded && opP>0){ opP = 0; follow = `${n1} is still untangling from the cradle — no score!`; SFX.good(); }
   if((myP>0 || text.startsWith('Takedown')) && B.theyScored && !B.answered){ B.answered = true; mission('answerBack'); }
   if((myP>0 || text.startsWith('Takedown')) && B.ex===5) mission('lateScore');
-  if(opP>0){ lunge('op'); hit('me'); B.op+=opP; B.last='op'; B.theyScored = true; floatPts('op', '+'+opP, '#ff8a7a');
+  if(opP>0){ choreo('op', opP, plan); B.op+=opP; B.last='op'; B.theyScored = true; floatPts('op', '+'+opP, '#ff8a7a');
     if(opP>=4) SFX.slam(); else SFX.thud();
     SFX.groan(); say(opP>=4?'Four!':opP===1?'One!':'Two!'); }
-  if(!myP && !opP){ say('No score!'); SFX.grapple(); }
+  if(!myP && !opP && !text.startsWith('Takedown')){ say('No score!'); SFX.grapple(); pose('me','lock',520); pose('op','lock',520); }
   if(Math.random()<.35) shout();
   updScore();
   let sc = '';
@@ -2151,6 +2469,7 @@ async function exchange(){
   stage(`<div class="panel" style="text-align:center"><div class="small muted">${q==='perfect'?'⭐ PERFECT':q==='good'?'✅ GOOD':'❌ MISSED'}</div>
     ${sceneImg(sc)}
     <div class="verdict ${kind}" style="font-size:24px">${esc(text)}</div>${follow?`<div class="verdict good">${esc(follow)}</div>`:''}</div>`);
+  speak(text+(follow?'. '+follow:''));
   await sleep(sc?1900:1500);
 }
 
@@ -2199,7 +2518,7 @@ async function specialExchange(shielded){
 
   if(q!=='miss'){
     B.my += SPECIAL_PTS; B.last='me'; B.big4 = true; updScore();
-    lunge('me'); hit('op'); floatPts('me','+'+SPECIAL_PTS,'#f5c542');
+    choreo('me', SPECIAL_PTS, 'TIE'); floatPts('me','+'+SPECIAL_PTS,'#f5c542');
     SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); SFX.cheer(.9);
     say(`${SPECIAL_PTS} points!`, 2200);
     mission('big4');
@@ -2217,7 +2536,7 @@ async function specialExchange(shielded){
       extra = `<div class="verdict good">${esc(n1)} is still tangled up and cannot punish it.</div>`;
     } else if(sp.missGives){
       B.op += sp.missGives; B.last='op'; B.theyScored = true; updScore();
-      hit('me'); floatPts('op','+'+sp.missGives,'#ff8a7a'); SFX.thud();
+      choreo('op', sp.missGives, 'TIE'); floatPts('op','+'+sp.missGives,'#ff8a7a'); SFX.thud();
       extra = `<div class="verdict bad">${esc(n1)} rides the launch down — ${sp.missGives} points to them.</div>`;
     }
     say('Missed it!');
@@ -2299,19 +2618,27 @@ async function endBout(win, how){
   if(win){ setTimeout(()=>SFX.roar(), 300); } else { setTimeout(()=>SFX.groan(), 300); }
   setTimeout(()=>SFX.crowdStop(), 2200);
   say(win?'Winner!':'Good match!', 2500);
+  // the moment itself: arms up and confetti for a win; win or lose, they shake hands
+  if(win){ pose('me','win'); pose('op','sad'); banner(how==='Technical superiority'?'TECH FALL!':'WINNER!'); confetti(o.champ?110:70); buzz([40,60,40,60,140]); }
+  else { pose('op','win',1100); pose('me','sad',1100); setTimeout(()=>{ pose('me','shake'); pose('op','shake'); }, 1150); buzz(60); }
   S.bouts++; if(win) S.wins++;
   let xp = (18 + 10*o.L) * (o.champ?2.5:1) * (c.perks.xp||1);
   if(!win) xp *= .35*(c.perks.lossXp||1);
+  const heat = win ? (o.heat||0) : 0;      // the streak bonus
+  xp *= 1 + .1*heat;
   xp = Math.round(xp);
-  const coins = win ? Math.round((10+4*o.L)*(o.champ?3:1)*(c.perks.coins||1)) : 0;
+  const coins = win ? Math.round((10+4*o.L)*(o.champ?3:1)*(c.perks.coins||1)*(1+.1*heat)) : 0;
   S.coins += coins;
   let cardMsg = '', firstBoss = false;
   recordBout(o, win, how);
   packOpp(o.name);
   if(win && B.my>0 && !B.big4) pack('calmWin');
   if(win){ S.streak = (S.streak||0)+1; if(S.lastLoss) pack('loseWell'); } else S.streak = 0;
+  S.cold = win ? 0 : (S.cold||0)+1;
   S.lastLoss = !win;
   pack('handshakes');
+  if(win) daily('wins'); if(B.big4) daily('big'); if(win && B.op===0) daily('clean'); daily('opps', 1, o.name);
+  if(win && o.champ){ S.bossWins = S.bossWins||{}; S.bossWins[g.id] = Math.max(S.bossWins[g.id]||0, o.tier||0) + 1; }
   { const md=misDef(g.id).find(m=>m.k==='streak'); if(win && md && !misDone(g.id,md)){ S.mis[g.id]=S.mis[g.id]||{}; S.mis[g.id].streak=Math.max(S.mis[g.id].streak||0, Math.min(misNeed(md), S.streak)); if(misDone(g.id,md)){ toast(`✅ Mission done: ${esc(md.t)}`, 2600); } } }
   if(win && how==='Technical superiority') mission('techSup', 1, g.id);
   if(win) mission('winHere', 1, g.id);
@@ -2319,18 +2646,20 @@ async function endBout(win, how){
   if(win && o.champ && !S.bossBeat[g.id]){ S.bossBeat[g.id] = 1; firstBoss = true; cardMsg = applyLoot({type:'card', k:BOSSES[g.boss].card, r:CARDS[BOSSES[g.boss].card].r}); }
   const ups = addXP(xp);
   save();
-  await sleep(700);
+  await sleep(win?1900:2100);
   modal(`<div style="text-align:center">
     ${sceneImg('sc_referee',110)}
     <h2 style="font-size:34px;color:${win?'var(--gold)':'#ff8a7a'}">${win?'🏆 You win!':'You lost'}</h2>
     <div class="disp" style="font-size:30px">${B.my} - ${B.op}</div>
     <div class="small muted">${esc(how)}</div>
     ${win?'':`<p class="motto">"${esc(c.motto)}"</p><p class="small muted">Win or learn: you still earn XP. Try mixing up your moves and watch the clues.</p>`}
-    <div class="row" style="justify-content:center;gap:8px;margin:12px 0"><span class="pill" style="font-size:15px">✨ +${xp} XP</span>${coins?`<span class="pill" style="font-size:15px">💰 +${coins}</span>`:''}</div>
+    <div class="row" style="justify-content:center;gap:8px;margin:12px 0"><span class="pill" style="font-size:15px">✨ +${xp} XP</span>${coins?`<span class="pill" style="font-size:15px">💰 +${coins}</span>`:''}${heat?`<span class="pill" style="font-size:15px;background:rgba(229,72,63,.3)">🔥 Streak bonus +${heat*10}%</span>`:''}</div>
+    ${win&&S.streak>=2?`<p class="small" style="margin:0 0 8px">🔥 <b>${S.streak} wins in a row.</b> ${S.streak>=3?'Your next opponent raises their game again — and so does the bonus.':'One more and your opponents start raising their game — for bonus XP and coins.'}</p>`:''}
     ${win&&!o.champ&&(S.gymWins[g.id]||0)<=3?`<p class="small">Gym wins: <b>${Math.min(3,S.gymWins[g.id])}/3</b>${S.gymWins[g.id]>=3&&!S.stamps[g.id]?' — the boss will see you now!':''}</p>`:''}
     ${firstBoss?`<div class="loot r-${CARDS[o.card].r}" style="margin:8px 0"><div class="rar">${esc(shortName(o.name).toUpperCase())}'S BIG MOVE</div><div class="ic">${CARDS[o.card].i}</div><h3>${esc(CARDS[o.card].n)}</h3><div class="small">${esc(cardMsg)}</div></div>`:''}
     <button class="btn block" data-act="afterBout">Continue</button></div>`);
-  await new Promise(res=>{ ACTIONS.afterBout = ()=>{ closeModal(); res(); }; });
+  speak(win?`You win! ${B.my}, ${B.op}.`:`You lost this one, ${B.my}, ${B.op}. Win or learn. You still earn XP.`);
+  await new Promise(res=>{ ACTIONS.afterBout = ()=>{ closeModal(); hush(); res(); }; });
   for(const L of ups){ await levelUpModal(L); }
   if(win && o.champ && !S.stamps[g.id]){
     if(stampReady(g.id)) await checkStamp(g.id);
@@ -2338,6 +2667,7 @@ async function endBout(win, how){
       await coachWait('Brilliant win!', `<p>You beat <b>${esc(o.name)}</b> — but a stamp isn't just about winning. Finish your missions here and I'll stamp your passport:</p>${missionList(g.id).replace(/<button[^>]*>Take test<\/button>/g,'')}<p class="small muted" style="margin-top:8px">${left.length===1?'One':'Two'} to go. Every wrestler is ready at a different time.</p>`, 'On it, Coach'); }
   } else if(win && stampReady(g.id)) await checkStamp(g.id);
   if(win){ await new Promise(res=>openBags(o.champ, 1, res)); }
+  await dailyClaim();
   go('gym', {gym:g.id});
 }
 function levelUpModal(L){
@@ -2346,14 +2676,14 @@ function levelUpModal(L){
   const newSlot = L===10 || L===20;
   const gyms = GYMS.filter(g=>g.lvl===L).map(g=>g.name);
   modal(`<div style="text-align:center"><div style="font-size:54px">⭐</div><h2 style="font-size:32px">Level ${L}!</h2>
-    <p>All stats +1 · ${esc(sig)} bonus · <b>+3 stat points</b> to spend · energy refilled</p>
+    <p>All stats +1 · ${esc(sig)} bonus · <b>+3 stat points</b> to spend · energy refilled</p>${(confetti(50), buzz([30,40,80]), speak(`Level ${L}!`), '')}
     ${newSlot?'<p style="color:var(--gold);font-weight:900">New move card slot unlocked!</p>':''}
     ${gyms.length?`<p class="small">Now at the right level for: <b>${gyms.map(esc).join(', ')}</b></p>`:''}
     <button class="btn block" data-act="lvlOk">Brilliant</button></div>`);
   return new Promise(res=>{ ACTIONS.lvlOk = ()=>{ closeModal(); res(); }; });
 }
 function stampModal(g){
-  SFX.perfect(); SFX.cheer();
+  SFX.perfect(); SFX.cheer(); confetti(90); buzz([40,60,40,60,140]); speak('Stamp earned!');
   const i = gymIdx(g.id), next = GYMS[i+1], bd = BOSSES[g.boss], first = bd.name.split(' ')[0];
   modal(`<div style="text-align:center">
     <div class="coachbox" style="text-align:left"><img src="${coachImg()}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div><div class="small">"Missions done, boss beaten, and you showed effort and respect. You're ready. Stamp!"</div></div></div>
@@ -2444,7 +2774,7 @@ ACTIONS.drillGo = async d=>{
   const s = STATS.find(x=>x.k===k), g = GYMS[gymIdx(UI.gym)];
   screen='drill';
   app.innerHTML = `<div class="bout"><div class="panel" style="text-align:center"><div class="small muted">${esc(g.name)}</div><h2>${s.i} ${s.n} drill</h2><div id="reps" class="disp" style="font-size:18px">Rep 1 of 5</div><div id="gain" class="small muted">Gain so far: +0</div></div>
-    <div class="mat"><div class="circle"></div><div class="tusk"><img src="${IMG.tusk}" alt=""></div><div class="bubble" id="bubble"></div><div class="fighter me" style="left:calc(50% - 65px)" id="fMe"><div class="emo mine"><img src="${avatar()}" alt=""></div></div><div class="shout" id="shout"></div></div>
+    <div class="mat"><div class="circle"></div><div class="tusk"><img src="${IMG.tusk}" alt=""></div><div class="bubble" id="bubble"></div><div class="fighter me" style="left:calc(50% - 69px)" id="fMe" data-pose="ready"><div class="fpose">${figureSVG(playerAv())}</div></div><div class="shout" id="shout"></div></div>
     <div class="stage" id="stage"></div></div>`;
   let gain = 0, xp = 0;
   for(let rep=0; rep<5; rep++){
@@ -2460,12 +2790,266 @@ ACTIONS.drillGo = async d=>{
   gain = Math.min(gain, 1-(S.trained[k]||0));
   S.trained[k] = (S.trained[k]||0)+gain; S.stats[k] += gain; mission('drills', 1, g.id); if(me().sig.includes(k)) pack('sigDrills');
   S.drills[k] = (S.drills[k]||0)+1;   // Coach Phoenix looks at this at sign-off time
+  daily('drill');
   const ups = addXP(xp); save();
   modal(`<div style="text-align:center"><div style="font-size:50px">${s.i}</div><h2>Session done!</h2><p><b>+${gain} ${s.n}</b> · ✨ +${xp} XP</p><button class="btn block" data-act="drillDone">Back to the gym</button></div>`);
   await new Promise(res=>{ ACTIONS.drillDone = ()=>{ closeModal(); res(); }; });
   for(const L of ups) await levelUpModal(L);
   if(stampReady(g.id)) await checkStamp(g.id);
+  await dailyClaim();
   go('gym', {gym:g.id});
+};
+
+
+// ===================== 1.6: THE WELCOME SESSION =====================
+// A new wrestler used to read seven screens before the first bout. Now they are
+// on the mat with Honey straight after making their wrestler: three guided
+// exchanges that teach the triangle by doing it. Nobody can lose this one —
+// a missed tap just means another go.
+const WELCOME_STEPS = [
+  {tell:'TIE',    pick:'SHOOT',  line:'reaches for a collar tie',     tip:'She wants to grab you. SHOOT beats Tie-up — tap SHOOT!',        good:'Takedown — 2 points!',                 big:'Lifted and dumped — 4 points!'},
+  {tell:'SHOOT',  pick:'SPRAWL', line:'drops her level low',           tip:'She is going for your legs. SPRAWL beats Shoot — tap SPRAWL!', good:'Sprawl and go behind — 2 points!',     big:'Sprawl, spin and turn — 4 points!'},
+  {tell:'SPRAWL', pick:'TIE',    line:'sits back with her hips low',   tip:'She is waiting for you. TIE-UP beats Sprawl — tap TIE-UP!',    good:'Snap down, go behind — 2 points!',     big:'Big throw — 4 points!'},
+];
+function triangleHTML(){
+  return `<div class="tri"><span class="m-SHOOT">⚡ beats ✊</span><span class="m-TIE">✊ beats 🛡️</span><span class="m-SPRAWL">🛡️ beats ⚡</span></div>`;
+}
+function askHelper(){
+  return new Promise(res=>{
+    stage(`<div class="panel" style="text-align:center"><h2 style="font-size:21px">How do you want to play?</h2>
+      <div class="bigpick" style="margin-top:10px">
+        <button data-act="helperPick" data-v="1"><b>🔊</b>Read it to me<div class="small muted">Picture hints · easier timing</div></button>
+        <button data-act="helperPick" data-v="0"><b>📖</b>I can read<div class="small muted">The full game</div></button>
+      </div><p class="small muted" style="margin:10px 0 0">You can change this any time on the More screen.</p></div>`);
+    ACTIONS.helperPick = d=>{ S.helper = d.v==='1'; save(); SFX.good(); res(); };
+  });
+}
+async function welcomeSession(){
+  const g = GYMS[0], opp = makeOpp(g,'champ'); opp.welcome = true; opp.heat = 0; opp.cold = 0;
+  B = {opp, ex:0, my:0, op:0, last:null, hist:[], sudden:0, log:[], theyScored:false, answered:false, missed:false, shield:false, big4:false, tutorial:true};
+  screen = 'bout'; UI.tap = null; UI.choose = null;
+  SFX.crowdStart(.2);
+  app.innerHTML = boutShell(); window.scrollTo(0,0);
+  const setPips = i=>{ $id('clock').textContent = 'WELCOME SESSION'; $id('pips').innerHTML = WELCOME_STEPS.map((_,j)=>`<i class="${j<i?'done':j===i?'now':''}"></i>`).join(''); };
+  setPips(-1);
+  if(S.helper==null) await askHelper();
+  stage(`<div class="panel" style="text-align:center">
+    <div class="coachbox" style="text-align:left"><img src="${coachImg()}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">COACH PHOENIX</div>
+      <div class="say" style="font-weight:800">Welcome, ${esc(S.name||'wrestler')}! This is <b>Honey the Badger</b>. She'll show you how to wrestle. You can't lose this one — just have a go.</div></div></div>
+    <button class="btn block nudge" style="margin-top:12px" data-act="boutGo">🤝 Shake hands</button></div>`);
+  speak(`Welcome, ${S.name||'wrestler'}! This is Honey the Badger. She will show you how to wrestle. You can't lose this one. Tap shake hands.`);
+  await waitAct();
+  pose('me','shake',650); pose('op','shake',650); buzz(15); await sleep(480);
+  SFX.crowdSet(.45); SFX.whistleStart(); say('Wrestle!');
+  await sleep(500);
+
+  for(let i=0;i<WELCOME_STEPS.length;i++){
+    const st = WELCOME_STEPS[i];
+    B.ex = i; setPips(i);
+    pose('me','ready'); tellPose(st.tell);
+    stage(`<div class="panel">
+      <div class="small muted">Lesson ${i+1} of 3 · Read the clue</div>
+      <div class="tell">Honey <b>${esc(st.line)}</b>…</div>
+      <div class="hintchip m-${st.tell}">👀 Looks like a <b>${MOVES[st.tell].i} ${MOVES[st.tell].n}</b></div>
+      <div class="small" style="margin-top:8px;font-weight:800;color:var(--gold)">Coach: ${esc(st.tip)}</div>
+    </div>
+    <div class="choices">${Object.keys(MOVES).map(k=>`<button class="choice m-${k} ${k===st.pick?'glow':'dim'}" data-act="choose" data-m="${k}"><b>${MOVES[k].i}</b><span>${MOVES[k].n}</span><small>beats <span class="m-${MOVES[k].beats}">${MOVES[MOVES[k].beats].i} ${MOVES[MOVES[k].beats].n}</span></small></button>`).join('')}</div>`);
+    speak(`Honey ${st.line}. ${st.tip}`);
+    await new Promise(res=>{ UI.choose = m=>{ if(m!==st.pick) return; UI.choose = null; res(m); }; ACTIONS.choose = d=>UI.choose && UI.choose(d.m); });
+    SFX.tap(); SFX.grapple();
+    pose('me', MOVE_POSE[st.pick]); pose('op', MOVE_POSE[st.tell]);
+    stage(`<div class="panel"><div class="reveal">
+        <div class="rv me"><b>${MOVES[st.pick].i}</b>You: ${MOVES[st.pick].n}</div><div class="disp" style="font-size:20px">VS</div>
+        <div class="rv op"><b>${MOVES[st.tell].i}</b>Honey: ${MOVES[st.tell].n}</div></div>
+      <div class="verdict good">You got the jump! ATTACK!</div></div>`);
+    speak('You got the jump! Now tap when the line is in the green.');
+    await sleep(1250);
+    let q = 'miss', tries = 0;
+    while(q==='miss'){
+      q = await runMeter({w: tries>1 ? .5 : .36, pf:.3, speed:.5+.07*i, label:'Tap when the white line is in the green!', time:20000});
+      if(q==='miss'){ tries++; SFX.bad(); say('Nearly!'); stage(`<div class="panel" style="text-align:center"><div class="verdict mid">Nearly! Have another go.</div><p class="small muted" style="margin:6px 0 0">Wait for the white line to slide into the green, then tap.</p></div>`); speak('Nearly! Have another go. Wait for the white line to reach the green, then tap.'); await sleep(1500); }
+    }
+    const pts = q==='perfect' ? 4 : 2, text = q==='perfect' ? st.big : st.good;
+    if(pts>=4){ const art = {SHOOT:'mv_doubleleg', TIE:'mv_throw'}[st.pick]; if(art) await moveSplash(art, st.pick==='SHOOT'?'Big double leg!':'Huge throw!'); }
+    choreo('me', pts, st.pick); B.my += pts; B.last = 'me'; updScore();
+    floatPts('me','+'+pts, pts>=4?'#f5c542':'#39d17a');
+    if(pts>=4){ SFX.slam(); setTimeout(()=>SFX.perfect(), 90); SFX.roar(); } else { SFX.thud(); setTimeout(()=>SFX.good(), 70); SFX.cheer(.55); }
+    say(pts>=4?'Four points!':'Two!');
+    const sc = scene(st.pick==='SHOOT'?'shootGood':st.pick==='TIE'?(pts>=4?'bigThrow':'tieGood'):'sprawlGood');
+    stage(`<div class="panel" style="text-align:center"><div class="small muted">${q==='perfect'?'⭐ PERFECT — you hit the gold!':'✅ GOOD'}</div>${sceneImg(sc,150)}<div class="verdict good" style="font-size:22px">${esc(text)}</div></div>`);
+    speak(text);
+    await sleep(2000);
+  }
+  setPips(3);
+  SFX.whistleEnd(); setTimeout(()=>SFX.roar(), 300);
+  pose('me','win'); pose('op','ready'); banner('WELL DONE!'); confetti(70); buzz([40,60,40,60,120]);
+  say('Great wrestling!', 2600);
+  stage(`<div class="panel" style="text-align:center">
+    <h2>That's wrestling!</h2>
+    ${triangleHTML()}
+    <p class="small" style="margin:0 0 4px">Read the clue. Pick the move that beats it. Tap in the green — <b style="color:var(--gold)">gold</b> is a big score.</p>
+    <p class="motto small" style="margin:6px 0 10px">Honey: "Mistakes are part of my journey — I will succeed if I keep trying!"</p>
+    <button class="btn block nudge" data-act="boutGo">I'm ready!</button></div>`);
+  speak("That's wrestling! Shoot beats tie-up. Tie-up beats sprawl. Sprawl beats shoot. Tap I'm ready.");
+  await waitAct();
+  hush(); stage('');
+  S.tut = true; save();
+  SFX.crowdStop();
+}
+// the wrestling style, chosen after they have felt a bout rather than before
+function pickStyle(cur){
+  return new Promise(res=>{
+    let sel = cur && PLAYER_STYLES.some(s=>s.id===cur) ? cur : '';
+    const draw = ()=>{
+      modal(`<div class="coachbox"><img src="${IMG.honey}" alt=""><div class="grow"><div class="small" style="color:var(--gold);font-weight:900;letter-spacing:1px">HONEY THE BADGER</div><h2 style="font-size:20px">What kind of wrestler are you?</h2></div></div>
+        <div class="styles" style="margin-top:12px">${PLAYER_STYLES.map(s=>`<button class="${sel===s.id?'on':''}" data-act="stylePick" data-v="${s.id}">
+          <div style="font-size:30px">${s.icon}</div><b class="disp" style="font-size:17px">${s.name}</b><div class="small muted">${esc(s.desc)}</div>
+          <div class="small" style="color:var(--gold);margin-top:3px">${esc(CARDS[s.move].i+' '+CARDS[s.move].n)}</div></button>`).join('')}</div>
+        <p class="small muted" style="margin:8px 0 0">${sel?esc(styleById(sel).perk):'Tap one. Each style starts with its own move card.'}</p>
+        <button class="btn block ${sel?'nudge':''}" style="margin-top:12px" data-act="styleGo" ${sel?'':'disabled'}>${sel?`Start as a ${esc(styleById(sel).name)}`:'Pick a style'}</button>`);
+    };
+    ACTIONS.stylePick = d=>{ sel = d.v; SFX.tap(); draw(); const s=styleById(sel); speak(`${s.name}. ${s.desc}`); };
+    ACTIONS.styleGo = ()=>{ if(!sel) return; closeModal(); SFX.good(); hush(); res(sel); };
+    draw();
+    speak('What kind of wrestler are you? '+PLAYER_STYLES.map(s=>`${s.name}: ${s.desc}`).join(' '));
+  });
+}
+const NICKNAMES = ['Thunder','Rocket','Tiger','Blaze','Storm','Flash','Bolt','Titan','Ace','Comet','Viper','Falcon','Bear','Wolf','Lightning','Hammer','Tornado','Jet','Rhino','Cobra','Phoenix Kid','Dynamo','Rumble','Mighty'];
+
+// ===================== 1.6: REASONS TO COME BACK =====================
+// A daily bag from Coach Phoenix, a challenge of the day (the same one for
+// everybody, so it is something to talk about at the club), and a wrestler
+// card to show people. All of it lives on the device — nothing is sent anywhere.
+const todayKey = (d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function dayNum(key){ const [y,m,d] = String(key).split('-').map(Number); return Math.floor(Date.UTC(y, m-1, d)/864e5); }
+const DAILY = [
+  {k:'wins',  n:3, t:'Win 3 bouts', i:'🏆'},
+  {k:'gold',  n:3, t:'Hit the gold zone 3 times', i:'⭐'},
+  {k:'shoot', n:3, t:'Score with a Shoot 3 times', i:'⚡'},
+  {k:'def',   n:2, t:'Stop 2 attacks with good defence', i:'🛡️'},
+  {k:'tie',   n:3, t:'Score with a Tie-up 3 times', i:'✊'},
+  {k:'drill', n:1, t:'Do a training session', i:'🏋️'},
+  {k:'opps',  n:3, t:'Wrestle 3 different wrestlers', i:'👥'},
+  {k:'big',   n:1, t:'Land a 4-point big move', i:'🌈'},
+  {k:'clean', n:1, t:"Win a bout without your opponent scoring", i:'🧼'},
+];
+function dcToday(){
+  const k = todayKey();
+  if(!S.dc || S.dc.d!==k){ const def = DAILY[dayNum(k) % DAILY.length]; S.dc = {d:k, k:def.k, p:0, done:false, paid:false, seen:{}}; }
+  return S.dc;
+}
+const dcDef = ()=>DAILY.find(x=>x.k===dcToday().k) || DAILY[0];
+function daily(k, n=1, tag){
+  if(!S.char || (B && B.tutorial)) return;
+  const c = dcToday(), def = dcDef(); if(c.k!==k || c.done) return;
+  if(tag!=null){ c.seen = c.seen||{}; if(c.seen[tag]) return; c.seen[tag] = 1; }
+  c.p = Math.min(def.n, (c.p||0)+n);
+  if(c.p>=def.n){ c.done = true; toast('🎯 Challenge of the day done! Coach Phoenix has a reward for you.', 3200); SFX.good(); }
+  save();
+}
+function dcRow(){
+  if(!S.char) return '';
+  const c = dcToday(), def = dcDef();
+  return `<div class="dcrow ${c.done?'done':''}"><span style="font-size:20px">${c.done?'✅':def.i}</span><div class="grow"><div class="small muted" style="font-weight:800;letter-spacing:.5px">CHALLENGE OF THE DAY</div>${esc(def.t)}</div><span class="pill">${Math.min(c.p||0,def.n)}/${def.n}</span></div>`;
+}
+async function dailyClaim(){
+  const c = dcToday(); if(!c.done || c.paid) return;
+  c.paid = true; const coins = 50 + S.lvl*10; S.coins += coins; save();
+  SFX.perfect(); confetti(40);
+  await coachWait('Challenge of the day — done!', `<p><b>${esc(dcDef().t)}</b> — that's the kind of work that gets noticed.</p>
+    <div class="row" style="justify-content:center;gap:8px;margin:10px 0"><span class="pill" style="font-size:15px">💰 +${coins}</span><span class="pill" style="font-size:15px">🎒 Champion bag</span></div>
+    <p class="small muted">There's a new challenge tomorrow.</p>`, 'Open my bag');
+  await new Promise(res=>openBags(true, 1, res));
+}
+async function dailyBag(){
+  if(!S.char || !S.tut) return false;
+  const k = todayKey(); S.day = S.day || {last:'', streak:0};
+  if(S.day.last===k) return false;
+  const gap = S.day.last ? dayNum(k)-dayNum(S.day.last) : 99;
+  S.day.streak = gap===1 ? (S.day.streak||0)+1 : 1; S.day.last = k;
+  S.energy = Math.max(S.energy, maxEnergy()); S.energyAt = Date.now(); save();
+  const st = S.day.streak, champ = st%3===0;
+  SFX.good();
+  await coachWait(st>1 ? `Day ${st} in a row!` : 'Good to see you!',
+    `<p>Here's your <b>daily bag</b>${champ?` — a <b>champion bag</b> today, for turning up ${st} days running`:''}. Your energy is topped up too.</p>
+     ${dcRow()}
+     <p class="small muted" style="margin-top:8px">${champ?'Turning up is half of wrestling.':'Every third day in a row is a champion bag.'}</p>`, 'Open my bag');
+  await new Promise(res=>openBags(champ, 1, res));
+  return true;
+}
+// everything that can greet you on the map, one at a time
+async function mapArrive(){
+  if(UI.arriving || document.querySelector('.modal')) return;
+  UI.arriving = true;
+  try{
+    if(specialOwed()) await offerSpecial();
+    if(await dailyBag()){ if(screen==='map') render(); }
+  } finally { UI.arriving = false; }
+}
+
+// ---------- the wrestler card ----------
+function loadImg(src){ return new Promise((res, rej)=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = ()=>rej(new Error('image')); i.src = src; }); }
+function fitText(x, txt, maxW, size, font){ let s = size; do{ x.font = `700 ${s}px ${font}`; if(x.measureText(txt).width<=maxW) break; s -= 4; }while(s>28); return s; }
+async function makeCard(){
+  const W=1080, H=1350, c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x = c.getContext('2d'), DISP = 'Oswald, Impact, "Arial Narrow", sans-serif', BODY = 'Nunito, "Trebuchet MS", system-ui, sans-serif';
+  const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#1d1420'); bg.addColorStop(.5,'#3a1d0e'); bg.addColorStop(1,'#0e0c11');
+  x.fillStyle = bg; x.fillRect(0,0,W,H);
+  x.strokeStyle = 'rgba(242,113,33,.10)'; x.lineWidth = 3;
+  for(let i=0;i<W;i+=90){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,H); x.stroke(); }
+  for(let i=0;i<H;i+=90){ x.beginPath(); x.moveTo(0,i); x.lineTo(W,i); x.stroke(); }
+  const tartan = y=>{ let px=0; const seq=[['#F27121',48],['#222',15],['#7a3310',30],['#222',12]]; while(px<W){ for(const [col,w] of seq){ x.fillStyle=col; x.fillRect(px,y,w,18); px+=w; } } };
+  tartan(0); tartan(H-18);
+  const glow = x.createRadialGradient(W/2,520,40,W/2,520,520); glow.addColorStop(0,'rgba(242,113,33,.55)'); glow.addColorStop(1,'rgba(242,113,33,0)');
+  x.fillStyle = glow; x.fillRect(0,0,W,H);
+  let logoEnd = 200;
+  try{ const logo = await loadImg(IMG.logo_h); const lh = 190, lw = lh*logo.width/logo.height; x.drawImage(logo, (W-lw)/2, 44, lw, lh); logoEnd = 44+lh; }catch(e){}
+  x.textAlign = 'center';
+  x.fillStyle = '#f7f0e9'; x.font = `700 44px ${DISP}`; x.fillText('L E G E N D S', W/2, logoEnd+52);
+  // the wrestler, in a ring
+  const cx = W/2, cy = 560, r = 230;
+  x.fillStyle = '#2a1a12'; x.beginPath(); x.arc(cx,cy,r,0,Math.PI*2); x.fill();
+  try{ const av = await loadImg(avatar()); x.save(); x.beginPath(); x.arc(cx,cy,r-6,0,Math.PI*2); x.clip(); x.drawImage(av, cx-r, cy-r+20, r*2, r*2*1.1); x.restore(); }catch(e){}
+  x.lineWidth = 16; x.strokeStyle = S.phoenix ? '#f5c542' : '#F27121'; x.beginPath(); x.arc(cx,cy,r,0,Math.PI*2); x.stroke();
+  // name and style
+  const nm = (S.name||'Wrestler').toUpperCase();
+  x.fillStyle = '#fff'; fitText(x, nm, W-140, 120, DISP); x.fillText(nm, W/2, 910);
+  const st = me().style;
+  x.fillStyle = '#f5c542'; x.font = `800 44px ${BODY}`; x.fillText(`${st.name}  ·  Level ${S.lvl}`, W/2, 975);
+  // three numbers
+  const stamps = Object.keys(S.stamps).length;
+  const cells = [[String(S.wins||0),'WINS'],[`${stamps}/${GYMS.length}`,'STAMPS'],[`${S.path||0}/6`,'PATHWAY']];
+  cells.forEach(([v,l],i)=>{ const bx = 110 + i*295, by = 1020, bw = 270, bh = 150;
+    x.fillStyle = 'rgba(255,255,255,.08)'; x.beginPath(); if(x.roundRect) x.roundRect(bx,by,bw,bh,26); else x.rect(bx,by,bw,bh); x.fill();
+    x.fillStyle = '#fff'; x.font = `700 72px ${DISP}`; x.fillText(v, bx+bw/2, by+84);
+    x.fillStyle = '#b3a8b8'; x.font = `800 28px ${BODY}`; x.fillText(l, bx+bw/2, by+126); });
+  // latest stamp, as a badge on the ring
+  const lastGym = [...GYMS].reverse().find(g=>S.stamps[g.id]);
+  if(lastGym){ try{ const b = await loadImg(IMG[BOSSES[lastGym.boss].img]); const bs = 190, bx = cx+r-120, by = cy+r-170;
+      x.fillStyle = '#f3e7cf'; x.beginPath(); x.arc(bx+bs/2, by+bs/2, bs/2+10, 0, Math.PI*2); x.fill();
+      x.strokeStyle = '#c0392b'; x.lineWidth = 8; x.beginPath(); x.arc(bx+bs/2, by+bs/2, bs/2+10, 0, Math.PI*2); x.stroke();
+      const k = Math.min(bs/b.width, bs/b.height)*.86; x.drawImage(b, bx+bs/2-b.width*k/2, by+bs/2-b.height*k/2, b.width*k, b.height*k); }catch(e){} }
+  x.fillStyle = '#F27121'; x.font = `700 50px ${DISP}`;
+  x.fillText(S.phoenix ? 'WRSTL LEGEND — CAN YOU BEAT ME?' : lastGym ? `STAMPED AT ${lastGym.name.toUpperCase()}`.slice(0,40) : 'CAN YOU BEAT ME?', W/2, 1238);
+  x.fillStyle = '#f7f0e9'; x.font = `800 34px ${BODY}`; x.fillText('Play free:  tinyurl.com/wrstllegends', W/2, 1292);
+  return c;
+}
+ACTIONS.shareCard = async ()=>{
+  try{
+    const c = await makeCard();
+    const blob = await new Promise((res, rej)=>{ try{ c.toBlob(b=>b?res(b):rej(new Error('blob')), 'image/png'); }catch(e){ rej(e); } });
+    const url = URL.createObjectURL(blob);
+    let file = null, can = false;
+    try{ file = new File([blob], 'wrstl-legends-card.png', {type:'image/png'}); can = !!(navigator.canShare && navigator.canShare({files:[file]})); }catch(e){}
+    modal(`<h2>My wrestler card</h2>
+      <img class="cardprev" src="${url}" alt="Your wrestler card" style="margin-top:8px">
+      <p class="small muted" style="margin:8px 0">Ask a grown-up before you share it. The card only shows your wrestling name and your cartoon wrestler.</p>
+      <div style="display:grid;gap:8px">
+        ${can?`<button class="btn block" data-act="shareGo">📤 Share</button>`:''}
+        <a class="btn ${can?'ghost':''} block" href="${url}" download="wrstl-legends-card.png">⬇️ Save the picture</a>
+        <button class="btn ghost block" data-act="close">Close</button></div>`);
+    ACTIONS.shareGo = async ()=>{ try{ await navigator.share({files:[file], title:'WRSTL Legends', text:'Can you beat my wrestler? Play WRSTL Legends: https://tinyurl.com/wrstllegends'}); }catch(e){} };
+  }catch(e){ toast("Couldn't make the card on this device.", 2600); }
 };
 
 // ---------- boot ----------
